@@ -1,11 +1,15 @@
 #!/home/shazib/Desktop/linux/test/bin/python
 import json
-from jinja2 import Template
 import smtplib, ssl
 from email.message import EmailMessage
 import os
 from datetime import datetime
 import logging
+
+try:
+    from jinja2 import Template
+except:
+    print('please run this command `pip install jinja2`')
 
 logging.basicConfig(filename=os.path.dirname(__file__) + '/logger.log',
                     filemode='a',
