@@ -15,10 +15,11 @@ def clearLogs():
 
 
 def cliMethod():
-    if args.logs is not None and args.logs=='show':
+    if args.logs is not None and args.logs == 'show':
         readLogs()
-    if args.logs is not None and args.logs=='clear':
+    if args.logs is not None and args.logs == 'clear':
         clearLogs()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
