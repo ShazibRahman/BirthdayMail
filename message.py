@@ -1,4 +1,5 @@
 #!/home/shazib/Desktop/linux/test/bin/python
+from asyncio.log import logger
 import json
 import smtplib, ssl
 from email.message import EmailMessage
@@ -16,16 +17,6 @@ logging.basicConfig(filename=os.path.dirname(__file__) + '/logger.log',
                     level=logging.DEBUG,
                     format='%(asctime)s %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p')
-
-def check_for_leap_year (year):
-    if (year % 400 == 0) and (year % 100 == 0):
-        return True
-    elif (year % 4 ==0) and (year % 100 != 0):
-        return True
-    else:
-        return False
-  
-
 
   
 def convert(seconds):
@@ -51,7 +42,7 @@ class BirthdayMail:
 
     def message_func(self, receiver_email, name):
         message = EmailMessage()
-        message["Subject"] = "Happy Birthday"
+        message["Subject"] = "Happy Birthday "+name
         message["From"] = self.sender_email
         message["To"] = receiver_email
         context_template = render_template(self.template_to_render,
@@ -77,6 +68,7 @@ class BirthdayMail:
         if not match:
             logging.info("--None has birthday today--")
     def get_all_bday_info(self):
+        logging.info("getting all the bday data")
         for val in self.bday:
             date_info_today= datetime.now()
             cur_year = date_info_today.year
@@ -87,6 +79,7 @@ class BirthdayMail:
             parse_date_to_look_good =datetime.strftime(datetime_format ,"%d %b %Y")
             diff_datetime = datetime_format-date_info_today
             days_rem_mes =  f"{diff_datetime.days} days {convert(diff_datetime.seconds)}"
+            
 
             print(val['name'] , parse_date_to_look_good ,days_rem_mes ,end="\n\n", sep="\n")
 
@@ -96,4 +89,4 @@ class BirthdayMail:
 if __name__ == "__main__":
     birthday = BirthdayMail()
     # birthday.send_mail_from_json()
-    # birthday.get_all_bday_info()
+    birthday.get_all_bday_info()
