@@ -40,9 +40,9 @@ class BirthdayMail:
         self.formatString = "%d-%m"
         self.bday = json.load(open(self.directoryString + "/data.json"))
 
-    def message_func(self, receiver_email, name):
+    def message_func(self, receiver_email, name:str):
         message = EmailMessage()
-        message["Subject"] = "Happy Birthday "+name
+        message["Subject"] = "Happy Birthday "+name.split("(")[0]
         message["From"] = self.sender_email
         message["To"] = receiver_email
         context_template = render_template(self.template_to_render,
@@ -88,5 +88,5 @@ class BirthdayMail:
 
 if __name__ == "__main__":
     birthday = BirthdayMail()
-    # birthday.send_mail_from_json()
-    birthday.get_all_bday_info()
+    birthday.send_mail_from_json()
+    # birthday.get_all_bday_info()

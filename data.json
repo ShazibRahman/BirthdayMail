@@ -5,7 +5,7 @@
         "mail": "sazib.hunk.123@gmail.com"
     },
     {
-        "name": "Sania Imam",
+        "name": "Sania Imam(Matoon)",
         "date": "05-05",
         "mail": "saniaimam123@gmail.com"
     },
@@ -33,5 +33,10 @@
         "name": "Saurav(Raju)",
         "date" : "10-12",
         "mail" : "avssaurav@gmail.com"
+    },
+    {
+        "name":"Abhigyan Anmol(Nannu)",
+        "date":"19-08",
+        "mail":"abhigyan1592000@gmail.com"
     }
 ]
