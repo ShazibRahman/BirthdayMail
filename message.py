@@ -1,5 +1,4 @@
 #!/home/shazib/Desktop/linux/test/bin/python
-from asyncio.log import logger
 import json
 import smtplib, ssl
 from email.message import EmailMessage
@@ -30,7 +29,7 @@ def render_template(template, context):
 class BirthdayMail:
 
     def __init__(self) -> None:
-        logging.info(f"current working directory {os.getcwd()}")
+        logging.info(f"logged in as {os.environ.get('USER')}")
         logging.info("----Starting the application-----")
         self.directoryString = os.path.dirname(__file__)
         self.sender_email = os.environ.get('shazmail')
@@ -48,7 +47,6 @@ class BirthdayMail:
         context_template = render_template(self.template_to_render,
                                            {"name": name})
         message.set_content(context_template, subtype="html")
-        context = ssl.create_default_context()
         with smtplib.SMTP_SSL("smtp.gmail.com",
                               465,
                               context=ssl.create_default_context()) as server:
