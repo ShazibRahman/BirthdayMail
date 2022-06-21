@@ -31,12 +31,32 @@
     },
     {
         "name": "Saurav(Raju)",
-        "date" : "10-12",
-        "mail" : "avssaurav@gmail.com"
+        "date": "10-12",
+        "mail": "avssaurav@gmail.com"
     },
     {
-        "name":"Abhigyan Anmol(Nannu)",
-        "date":"19-08",
-        "mail":"abhigyan1592000@gmail.com"
+        "name": "Abhigyan Anmol(Nannu)",
+        "date": "19-08",
+        "mail": "abhigyan1592000@gmail.com"
+    },
+    {
+        "name": "Bhagat chahar",
+        "date": "25-10",
+        "mail": "bhagatchahar5@gmail.com"
+    },
+    {
+        "name": "Madan lal (Chotu)",
+        "date": "15-07",
+        "mail": "madamsm67@gmail.com"
+    },
+    {
+        "name": "SRINIVAS CHILAKALAPUDI",
+        "date": "04-08",
+        "mail": "srinivaschilakalapudi29@gmail.com"
+    },
+    {
+        "name": "Gautam Gupta",
+        "date": "25-05",
+        "mail": "gautamgupta2000ssdn@gmail.com"
     }
 ]
