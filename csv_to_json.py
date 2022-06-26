@@ -1,13 +1,8 @@
-from array import typecodes
 import json
 import csv
-from opcode import opname
-from unicodedata import name
 
 def csv_json(csv_path , json_path):
     data :list = json.load(open("/home/shazib/Desktop/Folder/python/BirthdayMessage/data.json"))
-    # print(type(data))
-    length = len(data)
     names = get_email(data)
     with open(csv_path, encoding='utf-8') as csvf:
         csvReader = csv.DictReader(csvf)

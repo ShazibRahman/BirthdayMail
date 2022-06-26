@@ -1,7 +1,6 @@
 import argparse
 import os
 
-from parso import parse
 from message import BirthdayMail
 
 loggerPath = os.path.dirname(__file__) + "/logger.log"
