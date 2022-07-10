@@ -21,15 +21,15 @@ def cliMethod():
         readLogs()
     if args.logs is not None and args.logs == 'clear':
         clearLogs()
-    if args.b=="y":
-        birth = BirthdayMail()
-        birth.get_all_bday_info()
+    # if args.b=="y":
+    #     birth = BirthdayMail()
+    #     birth.get_all_bday_info()
 
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--logs", type=str, choices=['show', 'clear'])
-    parser.add_argument("-b",type=str,choices=['y','n'], default='n')
+    # parser.add_argument("-b",type=str,choices=['y','n'], default='n')
     args = parser.parse_args()
     cliMethod()
