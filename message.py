@@ -29,8 +29,9 @@ def render_template(template, context):
 class BirthdayMail:
 
     def __init__(self) -> None:
-        logging.info(f"logged in as {os.environ.get('USER')}")
-        logging.info("----Starting the application-----")
+        if os.environ.get('USER')=="Shazib_Anacron":
+            logging.info(f"logged in as {os.environ.get('USER')}")
+            logging.info("----Starting the application-----")
         self.directoryString = os.path.dirname(__file__)
         self.sender_email = os.environ.get('shazmail')
         self.password = os.environ.get('shazPassword')
@@ -66,7 +67,7 @@ class BirthdayMail:
         if not match:
             logging.info("--None has birthday today--")
     def get_all_bday_info(self):
-        logging.info("getting all the bday data")
+        # logging.info("getting all the bday data")
         for val in self.bday:
             date_info_today= datetime.now()
             cur_year = date_info_today.year
