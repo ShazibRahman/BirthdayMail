@@ -68,6 +68,7 @@ class BirthdayMail:
             logging.info("--None has birthday today--")
     def get_all_bday_info(self):
         # logging.info("getting all the bday data")
+        lis =[]
         for val in self.bday:
             date_info_today= datetime.now()
             cur_year = date_info_today.year
@@ -80,7 +81,13 @@ class BirthdayMail:
             days_rem_mes =  f"{diff_datetime.days} days {convert(diff_datetime.seconds)}"
             
 
-            print(val['name'] , parse_date_to_look_good ,days_rem_mes ,end="\n\n", sep="\n")
+            # print(val['name'] , parse_date_to_look_good ,days_rem_mes ,end="\n\n", sep="\n")
+            lis.append([diff_datetime.days, val['name'],parse_date_to_look_good , days_rem_mes]) #saving it in key value pair where key is the rem day for bd 
+        lis.sort()
+        for l,i,j,k in lis:
+            print(i,j,k,end="\n\n", sep="\n")
+
+
 
 
 
