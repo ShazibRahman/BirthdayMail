@@ -17,10 +17,11 @@ logging.basicConfig(filename=os.path.dirname(__file__) + '/logger.log',
                     format='%(asctime)s %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p')
 
-  
+
 def convert(seconds):
-    return time.strftime("%H hours %M Minutes %S Seconds to go " , time.gmtime(seconds))
-      
+    return time.strftime("%H hours %M Minutes %S Seconds to go ",
+                         time.gmtime(seconds))
+
 
 def render_template(template, context):
     return template.render(context)
@@ -29,7 +30,7 @@ def render_template(template, context):
 class BirthdayMail:
 
     def __init__(self) -> None:
-        if os.environ.get('USER')=="Shazib_Anacron":
+        if os.environ.get('USER') == "Shazib_Anacron":
             logging.info(f"logged in as {os.environ.get('USER')}")
             logging.info("----Starting the application-----")
         self.directoryString = os.path.dirname(__file__)
@@ -40,9 +41,9 @@ class BirthdayMail:
         self.formatString = "%d-%m"
         self.bday = json.load(open(self.directoryString + "/data.json"))
 
-    def message_func(self, receiver_email, name:str):
+    def message_func(self, receiver_email, name: str):
         message = EmailMessage()
-        message["Subject"] = "Happy Birthday "+name.split("(")[0]
+        message["Subject"] = "Happy Birthday " + name.split("(")[0]
         message["From"] = self.sender_email
         message["To"] = receiver_email
         context_template = render_template(self.template_to_render,
@@ -66,30 +67,33 @@ class BirthdayMail:
                 match = True
         if not match:
             logging.info("--None has birthday today--")
+
     def get_all_bday_info(self):
         # logging.info("getting all the bday data")
-        lis =[]
+        lis = []
         for val in self.bday:
-            date_info_today= datetime.now()
+            date_info_today = datetime.now()
             cur_year = date_info_today.year
-            datetime_format = datetime.strptime(val['date']+"-"+str(cur_year),self.formatString+"-%Y")
+            datetime_format = datetime.strptime(
+                val['date'] + "-" + str(cur_year), self.formatString + "-%Y")
             if date_info_today > datetime_format:
-                datetime_format = datetime.strptime(val['date']+"-"+str(cur_year+1),self.formatString+"-%Y")
+                datetime_format = datetime.strptime(
+                    val['date'] + "-" + str(cur_year + 1),
+                    self.formatString + "-%Y")
 
-            parse_date_to_look_good =datetime.strftime(datetime_format ,"%d %b %Y")
-            diff_datetime = datetime_format-date_info_today
-            days_rem_mes =  f"{diff_datetime.days} days {convert(diff_datetime.seconds)}"
-            
+            parse_date_to_look_good = datetime.strftime(
+                datetime_format, "%d %b %Y")
+            diff_datetime = datetime_format - date_info_today
+            days_rem_mes = f"{diff_datetime.days} days {convert(diff_datetime.seconds)}"
 
             # print(val['name'] , parse_date_to_look_good ,days_rem_mes ,end="\n\n", sep="\n")
-            lis.append([diff_datetime.days, val['name'],parse_date_to_look_good , days_rem_mes]) #saving it in key value pair where key is the rem day for bd 
+            lis.append([
+                diff_datetime.days, val['name'], parse_date_to_look_good,
+                days_rem_mes
+            ])  #saving it in key value pair where key is the rem day for bd
         lis.sort()
-        for l,i,j,k in lis:
-            print(i,j,k,end="\n\n", sep="\n")
-
-
-
-
+        for l, i, j, k in lis:
+            print(i, j, k, end="\n\n", sep="\n")
 
 
 if __name__ == "__main__":
