@@ -17,13 +17,19 @@ def clearLogs():
 
 
 def cliMethod():
+    if args.logs is None:
+        readLogs()
+        return
     if args.logs is not None and args.logs == 'show':
         readLogs()
+        return
     if args.logs is not None and args.logs == 'clear':
         clearLogs()
+        return
     if args.b == "y":
         birth = BirthdayMail()
         birth.get_all_bday_info()
+        return
 
 
 if __name__ == "__main__":
