@@ -68,7 +68,7 @@ class BirthdayMail:
         if not match:
             logging.info("--None has birthday today--")
 
-    def get_all_bday_info(self):
+    def get_all_bday_info(self,print_all:bool = False):
         # logging.info("getting all the bday data")
         lis = []
         for val in self.bday:
@@ -92,6 +92,9 @@ class BirthdayMail:
                 days_rem_mes
             ])  #saving it in key value pair where key is the rem day for bd
         lis.sort()
+        if not print_all:
+            lis = lis[:3]
+
         for l, i, j, k in lis:
             print(i, j, k, end="\n\n", sep="\n")
 
