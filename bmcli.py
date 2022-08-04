@@ -39,6 +39,6 @@ def cliMethod():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--logs", type=str, choices=['show', 'clear'])
-    parser.add_argument("-b", type=str, choices=['y', 'n','a'], default='n')
+    parser.add_argument("-b", type=str, choices=['y', 'n','a'])
     args = parser.parse_args()
     cliMethod()
