@@ -1,11 +1,18 @@
 #!/home/shazib/Desktop/linux/test/bin/python
+from inspect import isgenerator
 import json
-import smtplib, ssl
+import smtplib
+from sqlite3 import DataError
+import ssl
 from email.message import EmailMessage
 import os
-from datetime import datetime
+from datetime import date, datetime
 import logging
 import time
+from tkinter import Y
+from typing import Tuple
+from xmlrpc.client import DateTime
+
 try:
     from jinja2 import Template
 except:
@@ -39,6 +46,7 @@ class BirthdayMail:
         self.template_filename = self.directoryString + "/html_template.html"
         self.template_to_render = Template(open(self.template_filename).read())
         self.formatString = "%d-%m"
+        self.formatStringWithYear = "%d-%m-%Y"
         self.bday = json.load(open(self.directoryString + "/data.json"))
 
     def message_func(self, receiver_email, name: str):
@@ -68,29 +76,22 @@ class BirthdayMail:
         if not match:
             logging.info("--None has birthday today--")
 
-    def get_all_bday_info(self,print_all:bool = False):
+    def get_all_bday_info(self, print_all: bool = False):
         # logging.info("getting all the bday data")
         lis = []
         for val in self.bday:
-            date_info_today = datetime.now()
-            cur_year = date_info_today.year
-            datetime_format = datetime.strptime(
-                val['date'] + "-" + str(cur_year), self.formatString + "-%Y")
-            if date_info_today > datetime_format:
-                datetime_format = datetime.strptime(
-                    val['date'] + "-" + str(cur_year + 1),
-                    self.formatString + "-%Y")
+            next_birthday, diff_datetime = self.count_down_for_birthday(
+                val['date'])
 
             parse_date_to_look_good = datetime.strftime(
-                datetime_format, "%d %b %Y")
-            diff_datetime = datetime_format - date_info_today
+                next_birthday, "%d %b %Y")
             days_rem_mes = f"{diff_datetime.days} days {convert(diff_datetime.seconds)}"
 
             # print(val['name'] , parse_date_to_look_good ,days_rem_mes ,end="\n\n", sep="\n")
             lis.append([
                 diff_datetime.days, val['name'], parse_date_to_look_good,
                 days_rem_mes
-            ])  #saving it in key value pair where key is the rem day for bd
+            ])  # saving it in key value pair where key is the rem day for bd
         lis.sort()
         if not print_all:
             lis = lis[:3]
@@ -98,8 +99,58 @@ class BirthdayMail:
         for l, i, j, k in lis:
             print(i, j, k, end="\n\n", sep="\n")
 
+    def isGreater(self, day1, month1, day2, month2):
+        if month1 > month2:
+            return True
+        elif month1 == month2 and day1 > day2:
+            return True
+        else:
+            return False
+
+    def isLeapYear(self, year: int) -> bool:
+        if year % 4 == 0 and year % 100 != 0 or year % 400 == 0:
+            return True
+        else:
+            return False
+
+    def nextBirthYear(self, birthdayString: str) -> int:
+        day1, month1 = birthdayString.split("-")
+        today = datetime.now()
+        day2, month2, year = today.day, today.month, today.year
+        if month1 == "02" and day1 == "29":
+            if self.isGreater(int(day1), int(month1), day2,
+                              month2) and self.isLeapYear(year):
+                return year
+            else:
+                return self.find_next_leap_year(year)
+
+        elif self.isGreater(int(day1), int(month1), day2, month2):
+            return year + 1
+        else:
+            return year
+
+    def find_next_leap_year(self, year: int) -> int:
+        if year % 4 == 0 and year % 100 != 0 or year % 400 == 0:
+            return year + 4
+        elif year % 4 != 0:
+            return year + year % 4
+        elif year % 4 == 0 and year % 100 == 0 or year % 400 != 0:
+            return year + 4
+        else:
+            return year
+
+    def count_down_for_birthday(
+            self, birthdayString: str) -> Tuple[datetime, datetime]:
+        today = datetime.now()
+        birthdayString = birthdayString + "-" + str(
+            self.nextBirthYear(birthdayString))
+        print(birthdayString)
+        birthday = datetime.strptime(birthdayString, self.formatStringWithYear)
+        return birthday, birthday - today
+
 
 if __name__ == "__main__":
     birthday = BirthdayMail()
-    birthday.send_mail_from_json()
+    # birthday.send_mail_from_json()
     # birthday.get_all_bday_info()
+    print(birthday.find_next_leap_year(2024))
