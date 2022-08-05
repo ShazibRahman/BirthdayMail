@@ -125,9 +125,9 @@ class BirthdayMail:
                 return self.find_next_leap_year(year)
 
         elif self.isGreater(int(day1), int(month1), day2, month2):
-            return year + 1
-        else:
             return year
+        else:
+            return year + 1
 
     def find_next_leap_year(self, year: int) -> int:
         if year % 4 == 0 and year % 100 != 0 or year % 400 == 0:
@@ -144,13 +144,11 @@ class BirthdayMail:
         today = datetime.now()
         birthdayString = birthdayString + "-" + str(
             self.nextBirthYear(birthdayString))
-        print(birthdayString)
         birthday = datetime.strptime(birthdayString, self.formatStringWithYear)
         return birthday, birthday - today
 
 
 if __name__ == "__main__":
     birthday = BirthdayMail()
-    # birthday.send_mail_from_json()
+    birthday.send_mail_from_json()
     # birthday.get_all_bday_info()
-    print(birthday.find_next_leap_year(2024))
