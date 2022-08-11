@@ -1,17 +1,14 @@
 #!/home/shazib/Desktop/linux/test/bin/python
-from inspect import isgenerator
 import json
 import smtplib
-from sqlite3 import DataError
 import ssl
 from email.message import EmailMessage
 import os
-from datetime import date, datetime
+from datetime import  datetime
 import logging
 import time
-from tkinter import Y
 from typing import Tuple
-from xmlrpc.client import DateTime
+
 
 try:
     from jinja2 import Template
@@ -49,7 +46,7 @@ class BirthdayMail:
         self.formatStringWithYear = "%d-%m-%Y"
         self.bday = json.load(open(self.directoryString + "/data.json"))
 
-    def message_func(self, receiver_email, name: str):
+    def message_func(self, receiver_email:str, name: str):
         message = EmailMessage()
         message["Subject"] = "Happy Birthday " + name.split("(")[0]
         message["From"] = self.sender_email
@@ -99,7 +96,7 @@ class BirthdayMail:
         for l, i, j, k in lis:
             print(i, j, k, end="\n\n", sep="\n")
 
-    def isGreater(self, day1, month1, day2, month2):
+    def isGreater(self, day1:int, month1:int, day2:int, month2:int)->bool:
         if month1 > month2:
             return True
         elif month1 == month2 and day1 > day2:
