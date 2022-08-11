@@ -4,11 +4,10 @@ import smtplib
 import ssl
 from email.message import EmailMessage
 import os
-from datetime import  datetime
+from datetime import datetime
 import logging
 import time
 from typing import Tuple
-
 
 try:
     from jinja2 import Template
@@ -46,7 +45,7 @@ class BirthdayMail:
         self.formatStringWithYear = "%d-%m-%Y"
         self.bday = json.load(open(self.directoryString + "/data.json"))
 
-    def message_func(self, receiver_email:str, name: str):
+    def message_func(self, receiver_email: str, name: str):
         message = EmailMessage()
         message["Subject"] = "Happy Birthday " + name.split("(")[0]
         message["From"] = self.sender_email
@@ -74,7 +73,6 @@ class BirthdayMail:
             logging.info("--None has birthday today--")
 
     def get_all_bday_info(self, print_all: bool = False):
-        # logging.info("getting all the bday data")
         lis = []
         for val in self.bday:
             next_birthday, diff_datetime = self.count_down_for_birthday(
@@ -84,11 +82,10 @@ class BirthdayMail:
                 next_birthday, "%d %b %Y")
             days_rem_mes = f"{diff_datetime.days} days {convert(diff_datetime.seconds)}"
 
-            # print(val['name'] , parse_date_to_look_good ,days_rem_mes ,end="\n\n", sep="\n")
             lis.append([
                 diff_datetime.days, val['name'], parse_date_to_look_good,
                 days_rem_mes
-            ])  # saving it in key value pair where key is the rem day for bd
+            ])
         lis.sort()
         if not print_all:
             lis = lis[:3]
@@ -96,7 +93,8 @@ class BirthdayMail:
         for l, i, j, k in lis:
             print(i, j, k, end="\n\n", sep="\n")
 
-    def isGreater(self, day1:int, month1:int, day2:int, month2:int)->bool:
+    def isGreater(self, day1: int, month1: int, day2: int,
+                  month2: int) -> bool:
         if month1 > month2:
             return True
         elif month1 == month2 and day1 > day2:
