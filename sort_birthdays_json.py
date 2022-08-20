@@ -16,7 +16,7 @@ def readJsonFile(fileName:str)->List[object]:
         return json.load(f)
 
 
-def writeJsonFile(fileName:str, data:any, indent:int=None)->None:
+def writeJsonFile(fileName:str, data:list, indent:int=None)->None:
     with open(fileName, "w") as f:
         json.dump(data, f, indent=indent)
 

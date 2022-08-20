@@ -2,7 +2,7 @@ import json
 import csv
 
 
-def csv_json(csv_path, json_path):
+def csv_json(csv_path:str, json_path:str)->None:
     data: list = json.load(
         open("/home/shazib/Desktop/Folder/python/BirthdayMessage/data.json"))
     names = get_email(data)
@@ -22,7 +22,7 @@ def csv_json(csv_path, json_path):
             jsonf.write(json.dumps(data, indent=4))
 
 
-def get_email(data):
+def get_email(data)->set:
     nmes = set()
     for i in data:
         nmes.add(i['mail'])
