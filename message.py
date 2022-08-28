@@ -1,14 +1,8 @@
 #!/home/shazib/Desktop/linux/test/bin/python
-import json
-import smtplib
-import ssl
-from email.message import EmailMessage
-import os
-from datetime import datetime
-import logging
-from threading import current_thread
-import time
+import json, ssl, smtplib, logging, time, os
 from typing import Tuple
+from email.message import EmailMessage
+from datetime import datetime
 
 try:
     from jinja2 import Template
@@ -92,7 +86,7 @@ class BirthdayMail:
 
         current_time = current_date_time.strftime(self.formatString)
 
-        match = False
+        match: bool = False
         for val in self.bday:
             if current_time == val['date']:
                 self.message_func(val['mail'], val['name'])
