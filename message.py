@@ -54,8 +54,9 @@ class BirthdayMail:
         self.template_to_render = Template(open(self.template_filename).read())
         self.formatString = "%d-%m"
         self.formatStringWithYear = "%d-%m-%Y"
-        self.bday = json.load(open(self.directoryString + "/data.json"))
-        self.dates_done = json.load(open(self.directoryString + "/dates.json"))
+        self.bday: dict = json.load(open(self.directoryString + "/data.json"))
+        self.dates_done: list[str] = json.load(
+            open(self.directoryString + "/dates.json"))
 
     def message_func(self, receiver_email: str, name: str):
         message = EmailMessage()
