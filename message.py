@@ -6,13 +6,19 @@ from email.message import EmailMessage
 import os
 from datetime import datetime
 import logging
+from threading import current_thread
 import time
 from typing import Tuple
 
 try:
     from jinja2 import Template
 except:
-    print('please run this command `pip install jinja2`')
+    # print('please run this command `pip install jinja2`')
+    if os.name == 'nt':
+        os.system('pip install jinja2')
+    else:
+        os.system('pip3 install jinja2')
+    from jinja2 import Template
 
 logging.basicConfig(filename=os.path.dirname(__file__) + '/logger.log',
                     filemode='a',
@@ -30,6 +36,11 @@ def render_template(template, context):
     return template.render(context)
 
 
+def saveJsontoFile(fileName: str, data: list, indent: int = 4) -> None:
+    with open(fileName, "w") as f:
+        json.dump(data, f, indent=indent)
+
+
 class BirthdayMail:
 
     def __init__(self) -> None:
@@ -44,6 +55,7 @@ class BirthdayMail:
         self.formatString = "%d-%m"
         self.formatStringWithYear = "%d-%m-%Y"
         self.bday = json.load(open(self.directoryString + "/data.json"))
+        self.dates_done = json.load(open(self.directoryString + "/dates.json"))
 
     def message_func(self, receiver_email: str, name: str):
         message = EmailMessage()
@@ -63,12 +75,28 @@ class BirthdayMail:
             )
 
     def send_mail_from_json(self):
-        current_time = datetime.strftime(datetime.now(), self.formatString)
+
+        current_date_time = datetime.now()
+        current_date_withyear = current_date_time.strftime(
+            self.formatStringWithYear)
+        if current_date_withyear in self.dates_done:
+            logging.info(
+                f"script for {current_date_withyear} has already been executed"
+            )
+            return
+        else:
+            self.dates_done.append(current_date_withyear)
+            saveJsontoFile(self.directoryString + "/dates.json",
+                           self.dates_done)
+
+        current_time = current_date_time.strftime(self.formatString)
+
         match = False
         for val in self.bday:
             if current_time == val['date']:
                 self.message_func(val['mail'], val['name'])
                 match = True
+                break
         if not match:
             logging.info("--None has birthday today--")
 
