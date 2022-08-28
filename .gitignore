@@ -3,3 +3,4 @@ logger.log
 __pycache__
 data.json
 data_bk.json
+dates.json
