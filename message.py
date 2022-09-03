@@ -1,5 +1,9 @@
-#!/home/shazib/Desktop/linux/test/bin/python
-import json, ssl, smtplib, logging, time, os
+import json
+import ssl
+import smtplib
+import logging
+import time
+import os
 from typing import Tuple
 from email.message import EmailMessage
 from datetime import datetime
