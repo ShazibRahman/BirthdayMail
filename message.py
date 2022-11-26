@@ -11,7 +11,6 @@ from datetime import datetime
 try:
     from jinja2 import Template
 except:
-    # print('please run this command `pip install jinja2`')
     if os.name == 'nt':
         os.system('pip install jinja2')
     else:
@@ -45,9 +44,11 @@ class BirthdayMail:
         if os.environ.get('USER') == "Shazib_Anacron":
             logging.info(f"logged in as {os.environ.get('USER')}")
             logging.info("----Starting the application-----")
+        else:
+            logging.info = print
         self.directoryString = os.path.dirname(__file__)
-        self.sender_email = os.environ.get('shazmail')
-        self.password = os.environ.get('shazPassword')
+        self.sender_email: str = os.environ.get('shazmail')  # type: ignore
+        self.password: str = os.environ.get('shazPassword')  # type: ignore
         self.template_filename = self.directoryString + "/html_template.html"
         self.template_to_render = Template(open(self.template_filename).read())
         self.formatString = "%d-%m"
