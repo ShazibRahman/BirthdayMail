@@ -4,6 +4,7 @@ import smtplib
 import logging
 import time
 import os
+import random
 from typing import Tuple
 from email.message import EmailMessage
 from datetime import datetime
@@ -49,8 +50,7 @@ class BirthdayMail:
         self.directoryString = os.path.dirname(__file__)
         self.sender_email: str = os.environ.get('shazmail')  # type: ignore
         self.password: str = os.environ.get('shazPassword')  # type: ignore
-        self.template_filename = self.directoryString + "/html_template.html"
-        self.template_to_render = Template(open(self.template_filename).read())
+
         self.formatString = "%d-%m"
         self.formatStringWithYear = "%d-%m-%Y"
         self.bday: dict = json.load(open(self.directoryString + "/data.json"))
@@ -62,6 +62,10 @@ class BirthdayMail:
         message["Subject"] = "Happy Birthday " + name.split("(")[0]
         message["From"] = self.sender_email
         message["To"] = receiver_email
+        templateList = ["template_3.html","template_2.html","template_1.html"]
+        templaneName = random.choice(templateList)
+        self.template_filename = self.directoryString + "/templates/"+templaneName
+        self.template_to_render = Template(open(self.template_filename).read())
         context_template = render_template(self.template_to_render,
                                            {"name": name})
         message.set_content(context_template, subtype="html")
@@ -71,7 +75,7 @@ class BirthdayMail:
             server.login(self.sender_email, self.password)
             server.send_message(message)
             logging.info(
-                f"The email has been sent to {name} with email {receiver_email}"
+                f"The email has been sent to {name} with email {receiver_email} using template {templaneName}"
             )
 
     def send_mail_from_json(self):
