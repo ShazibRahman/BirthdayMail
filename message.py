@@ -54,8 +54,33 @@ class BirthdayMail:
         self.formatString = "%d-%m"
         self.formatStringWithYear = "%d-%m-%Y"
         self.bday: dict = json.load(open(self.directoryString + "/data.json"))
+        self.occasions:list  = json.load(open(self.directoryString + "/occasions.json"))
         self.dates_done: list[str] = json.load(
             open(self.directoryString + "/dates.json"))
+    
+    def sendEmailOnSpecialOccasion(self ,Occasion:object):
+        template_filename = self.directoryString + "/templates/"+Occasion['template']
+
+        self.template_to_render = Template(open(template_filename).read())
+        context_template = render_template(self.template_to_render ,{})
+
+        for person in Occasion['peopleToGreet']:
+            message = EmailMessage()
+            message["Subject"] = Occasion['subject']+" "+person['name'].split("(")[0] + "!"
+            message["From"] = self.sender_email
+            message["To"] = person['mail']
+
+            message.set_content(context_template, subtype="html")
+            with smtplib.SMTP_SSL("smtp.gmail.com",
+                                  465,
+                                  context=ssl.create_default_context()) as server:
+                server.login(self.sender_email, self.password)
+                server.send_message(message)
+                logging.info(
+                    f"The email has been sent to {person['name']} with email {person['mail']} using template {Occasion['template']}"
+                )
+
+
 
     def message_func(self, receiver_email: str, name: str):
         message = EmailMessage()
@@ -103,6 +128,12 @@ class BirthdayMail:
                 break
         if not match:
             logging.info("--None has birthday today--")
+        for Occasion in self.occasions:
+            if current_date_withyear == Occasion['date']:
+                self.sendEmailOnSpecialOccasion(Occasion)
+                self.occasions.remove(Occasion)
+
+        
 
     def get_all_bday_info(self, print_all: bool = False):
         lis = []
