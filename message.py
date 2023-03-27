@@ -7,11 +7,11 @@ import os
 import random
 from typing import Tuple
 from email.message import EmailMessage
-from datetime import datetime
+from datetime import datetime, timedelta
 
 try:
     from jinja2 import Template
-except:
+except ImportError:
     if os.name == 'nt':
         os.system('pip install jinja2')
     else:
@@ -23,6 +23,9 @@ logging.basicConfig(filename=os.path.dirname(__file__) + '/logger.log',
                     level=logging.DEBUG,
                     format='%(asctime)s %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p')
+
+ctx = ssl.create_default_context()
+ctx.verify_mode = ssl.CERT_REQUIRED
 
 
 def convert(seconds):
@@ -39,9 +42,39 @@ def saveJsontoFile(fileName: str, data: list, indent: int = 4) -> None:
         json.dump(data, f, indent=indent)
 
 
+def find_next_leap_year(year: int) -> int:
+    if year % 4 == 0 and year % 100 != 0 or year % 400 == 0:
+        return year + 4
+    elif year % 4 != 0:
+        return year + year % 4
+    elif year % 4 == 0 and year % 100 == 0 or year % 400 != 0:
+        return year + 4
+    else:
+        return year
+
+
+def isLeapYear(year: int) -> bool:
+    if year % 4 == 0 and year % 100 != 0 or year % 400 == 0:
+        return True
+    else:
+        return False
+
+
+def isGreater(day1: int, month1: int, day2: int,
+              month2: int) -> bool:
+    if month1 > month2:
+        return True
+    elif month1 == month2 and day1 > day2:
+        return True
+    else:
+        return False
+
+
 class BirthdayMail:
 
     def __init__(self) -> None:
+        self.template_filename = None
+        self.template_to_render = None
         if os.environ.get('USER') == "Shazib_Anacron":
             logging.info(f"logged in as {os.environ.get('USER')}")
             logging.info("----Starting the application-----")
@@ -54,49 +87,47 @@ class BirthdayMail:
         self.formatString = "%d-%m"
         self.formatStringWithYear = "%d-%m-%Y"
         self.bday: dict = json.load(open(self.directoryString + "/data.json"))
-        self.occasions:list  = json.load(open(self.directoryString + "/occasions.json"))
+        self.occasions: list = json.load(open(self.directoryString + "/occasions.json"))
         self.dates_done: list[str] = json.load(
             open(self.directoryString + "/dates.json"))
-    
-    def sendEmailOnSpecialOccasion(self ,Occasion:object):
-        template_filename = self.directoryString + "/templates/"+Occasion['template']
+
+    def sendEmailOnSpecialOccasion(self, Occasion: dict):
+        template_filename = self.directoryString + "/templates/" + Occasion['template']
 
         self.template_to_render = Template(open(template_filename).read())
-        context_template = render_template(self.template_to_render ,{})
+        context_template = render_template(self.template_to_render, {})
 
         for person in Occasion['peopleToGreet']:
             message = EmailMessage()
-            message["Subject"] = Occasion['subject']+" "+person['name'].split("(")[0] + "!"
+            message["Subject"] = Occasion['subject'] + " " + person['name'].split("(")[0] + "!"
             message["From"] = self.sender_email
             message["To"] = person['mail']
 
             message.set_content(context_template, subtype="html")
             with smtplib.SMTP_SSL("smtp.gmail.com",
                                   465,
-                                  context=ssl.create_default_context()) as server:
+                                  context=ctx) as server:
                 server.login(self.sender_email, self.password)
                 server.send_message(message)
                 logging.info(
                     f"The email has been sent to {person['name']} with email {person['mail']} using template {Occasion['template']}"
                 )
 
-
-
     def message_func(self, receiver_email: str, name: str):
         message = EmailMessage()
         message["Subject"] = "Happy Birthday " + name.split("(")[0]
         message["From"] = self.sender_email
         message["To"] = receiver_email
-        templateList = ["template_3.html","template_2.html","template_1.html"]
+        templateList = ["template_3.html", "template_2.html", "template_1.html"]
         templaneName = random.choice(templateList)
-        self.template_filename = self.directoryString + "/templates/"+templaneName
+        self.template_filename = self.directoryString + "/templates/" + templaneName
         self.template_to_render = Template(open(self.template_filename).read())
         context_template = render_template(self.template_to_render,
                                            {"name": name})
         message.set_content(context_template, subtype="html")
         with smtplib.SMTP_SSL("smtp.gmail.com",
                               465,
-                              context=ssl.create_default_context()) as server:
+                              context=ctx) as server:
             server.login(self.sender_email, self.password)
             server.send_message(message)
             logging.info(
@@ -132,8 +163,8 @@ class BirthdayMail:
             if current_date_withyear == Occasion['date']:
                 self.sendEmailOnSpecialOccasion(Occasion)
                 self.occasions.remove(Occasion)
-
-        
+        saveJsontoFile(self.directoryString + "/occasions.json",
+                       self.occasions)
 
     def get_all_bday_info(self, print_all: bool = False):
         lis = []
@@ -156,54 +187,29 @@ class BirthdayMail:
         for l, i, j, k in lis:
             print(i, j, k, end="\n\n", sep="\n")
 
-    def isGreater(self, day1: int, month1: int, day2: int,
-                  month2: int) -> bool:
-        if month1 > month2:
-            return True
-        elif month1 == month2 and day1 > day2:
-            return True
-        else:
-            return False
-
-    def isLeapYear(self, year: int) -> bool:
-        if year % 4 == 0 and year % 100 != 0 or year % 400 == 0:
-            return True
-        else:
-            return False
-
     def nextBirthYear(self, birthdayString: str) -> int:
         day1, month1 = birthdayString.split("-")
         today = datetime.now()
         day2, month2, year = today.day, today.month, today.year
         if month1 == "02" and day1 == "29":
-            if self.isGreater(int(day1), int(month1), day2,
-                              month2) and self.isLeapYear(year):
+            if isGreater(int(day1), int(month1), day2,
+                         month2) and isLeapYear(year):
                 return year
             else:
-                return self.find_next_leap_year(year)
+                return find_next_leap_year(year)
 
-        elif self.isGreater(int(day1), int(month1), day2, month2):
+        elif isGreater(int(day1), int(month1), day2, month2):
             return year
         else:
             return year + 1
 
-    def find_next_leap_year(self, year: int) -> int:
-        if year % 4 == 0 and year % 100 != 0 or year % 400 == 0:
-            return year + 4
-        elif year % 4 != 0:
-            return year + year % 4
-        elif year % 4 == 0 and year % 100 == 0 or year % 400 != 0:
-            return year + 4
-        else:
-            return year
-
     def count_down_for_birthday(
-            self, birthdayString: str) -> Tuple[datetime, datetime]:
+            self, birthdayString: str) -> tuple[datetime, timedelta]:
         today = datetime.now()
         birthdayString = birthdayString + "-" + str(
             self.nextBirthYear(birthdayString))
-        birthday = datetime.strptime(birthdayString, self.formatStringWithYear)
-        return birthday, birthday - today
+        birthday_ = datetime.strptime(birthdayString, self.formatStringWithYear)
+        return birthday_, birthday_ - today
 
 
 if __name__ == "__main__":
