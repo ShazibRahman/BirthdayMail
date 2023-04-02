@@ -41,7 +41,7 @@ def saveJsontoFile(fileName: str, data: list, indent: int = 4) -> None:
     with open(fileName, "w") as f:
         json.dump(data, f, indent=indent)
 
-def read_json_to_py_objecy(fileName:str)->object:
+def read_json_to_py_objecy(fileName:str):
     with open(fileName) as f :
         return json.load(f)
 
@@ -79,11 +79,6 @@ class BirthdayMail:
     def __init__(self) -> None:
         self.template_filename = None
         self.template_to_render = None
-        if os.environ.get('USER') == "Shazib_Anacron":
-            logging.info(f"logged in as {os.environ.get('USER')}")
-            logging.info("----Starting the application-----")
-        else:
-            logging.info = print
         self.directoryString = os.path.dirname(__file__)
         self.sender_email: str = os.environ.get('shazmail')  # type: ignore
         self.password: str = os.environ.get('shazPassword')  # type: ignore
@@ -94,7 +89,7 @@ class BirthdayMail:
             open(self.directoryString + "/dates.json"))
 
     def sendEmailOnSpecialOccasion(self, Occasion: dict):
-        template_filename = self.directoryString + "/templates/" + Occasion['template']
+        template_filename = os.path.join(self.directoryString,'templates',Occasion["template"])
         
         self.template_to_render = Template(open(template_filename).read())
         context_template = render_template(self.template_to_render, {})
@@ -144,16 +139,15 @@ class BirthdayMail:
                 )
                 status = True
         except Exception as e:
-            logging.info("Error sending mail will re-try in an hour.")
+            logging.error("Error sending mail will re-try in an hour.")
             if val not in self.pending_dates:
                 self.pending_dates.append(val)
-                logging.info(f"--adding current date {val['date']} in pending dates list")
+                logging.info(f"--adding the dict {val} in pending dates list")
                 saveJsontoFile(os.path.join(self.directoryString,'pending_dates.json'),self.pending_dates)
-            if e.__class__.__name__ == "gaierror":
-                logging.info("Network error not able to connect to server.")
-                exit(1)
-            
             status = False
+
+        if not status:
+            logging.error("Network  not able to connect to server.")
         return status
 
     def check_for_pending_and_send_message(self):
@@ -167,11 +161,12 @@ class BirthdayMail:
                     if success:
                         self.pending_dates.remove(i)
                         self.dates_done.append(current_date_string)
+                        self.dates_done.sort(key=lambda x: datetime.strptime(x, self.formatStringWithYear))
                         logging.info("--Sending backlog emails succeed for",i['mail'])
                         saveJsontoFile(os.path.join(self.directoryString,'pending_dates.json'),self.pending_dates)
                         saveJsontoFile(os.path.join(self.directoryString,'dates.json'),self.dates_done)
                     else:
-                        logging.info("--pending dates email failed")
+                        logging.info("--backlog email failed--")
 
 
 
@@ -186,7 +181,8 @@ class BirthdayMail:
 
         current_time = current_date_time.strftime(self.formatString)
         self.bday: dict = json.load(open(self.directoryString + "/data.json"))
-        self.pending_dates :list =  read_json_to_py_objecy(os.path.join(self.directoryString,'pending_dates.json'))
+        self.pending_dates :list[dict] =  read_json_to_py_objecy(os.path.join(self.directoryString,'pending_dates.json'))
+        pending_date_file_changed = False
 
         self.check_for_pending_and_send_message()
 
@@ -197,10 +193,17 @@ class BirthdayMail:
             if current_time == val['date']:
                 success = self.message_func(val)
                 match = True
-                break
+                if success and  val in self.pending_dates:
+                    # if on date let say the smtp login failed for the first time and the it get stored in pending dates but later on same date if cron hourly runs and this time it succeed the pending dates shall be removed
+                    self.pending_dates.remove(val)
+
+                    pending_date_file_changed = True
+               
+                
 
         if match and success:
             self.dates_done.append(current_date_withyear)
+    
             saveJsontoFile(self.directoryString + "/dates.json",
                            self.dates_done)           
         
@@ -209,6 +212,8 @@ class BirthdayMail:
             self.dates_done.append(current_date_withyear)
             saveJsontoFile(self.directoryString + "/dates.json",
                            self.dates_done)
+        if pending_date_file_changed:
+            saveJsontoFile(os.path.join(self.directoryString,'pending_dates.json'),self.pending_dates)
 
     def get_current_date(self)->Tuple[datetime,str]:
         current_date_time = datetime.now()
@@ -277,12 +282,18 @@ class BirthdayMail:
 
 
 if __name__ == "__main__":
-    os.system(f'''
-    git pull 
-    git add *
-    git commit -m "commit"
-    git push
-    ''')
+           
+    if os.environ.get('USER') != "Shazib_Anacron":
+            logging.info(f"logged in as {os.environ.get('USER')}")
+            logging.info("----Starting the application-----")
+            os.system(f'''
+                        git pull 
+                        git add *
+                        git commit -m "commit"
+                        git push
+                        ''')
+    else:
+            logging.info = print
     birthday = BirthdayMail()
     birthday.send_mail_from_json()
     birthday.send_email_special_occassions()
