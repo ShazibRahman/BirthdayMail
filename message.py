@@ -243,8 +243,8 @@ if __name__ == "__main__":
     os.system(f'''
     git pull;
     git add *;
-    git commit -m "commit"
-    git push
+    git commit -m "commit";
+    git push;
     ''')
     birthday = BirthdayMail()
     birthday.send_mail_from_json()
