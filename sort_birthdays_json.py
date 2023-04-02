@@ -7,8 +7,8 @@ def sortBirthdaysObjectOnKey(birthdays: List[object], key: str) -> list:
     sort birthdays object on key (date)
     """
     return sorted(
-        birthdays,
-        key=lambda x: x[key].split("-")[1] + "-" + x[key].split("-")[0])
+        birthdays, key=lambda x: x[key].split("-")[1] + "-" + x[key].split("-")[0]
+    )
 
 
 def readJsonFile(fileName: str) -> List[object]:
