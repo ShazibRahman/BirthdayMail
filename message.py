@@ -148,7 +148,7 @@ class BirthdayMail:
             if val not in self.pending_dates:
                 self.pending_dates.append(val)
                 logging.info(f"--adding current date {val['date']} in pending dates list")
-                saveJsontoFile(os.path.join(self.directoryString,'pending_dates.json'))
+                saveJsontoFile(os.path.join(self.directoryString,'pending_dates.json'),self.pending_dates)
             if e.__class__.__name__ == "gaierror":
                 logging.info("Network error not able to connect to server.")
                 exit(1)
@@ -168,8 +168,8 @@ class BirthdayMail:
                         self.pending_dates.remove(i)
                         self.dates_done.append(current_date_string)
                         logging.info("--Sending backlog emails succeed for",i['mail'])
-                        saveJsontoFile(os.path.join(self.directoryString,'pending_dates.json'))
-                        saveJsontoFile(os.path.join(self.directoryString,'dates.json'))
+                        saveJsontoFile(os.path.join(self.directoryString,'pending_dates.json'),self.pending_dates)
+                        saveJsontoFile(os.path.join(self.directoryString,'dates.json'),self.dates_done)
                     else:
                         logging.info("--pending dates email failed")
 
