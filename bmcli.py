@@ -7,9 +7,7 @@ loggerPath = os.path.dirname(__file__) + "/logger.log"
 
 
 def readLogs():
-    with open(loggerPath) as file:
-        print(file.read(), end="")
-
+    os.system(f'bat --paging=never {loggerPath}')
 
 def clearLogs():
     with open(loggerPath, 'w') as file:

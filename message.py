@@ -86,16 +86,16 @@ class BirthdayMail:
 
         self.formatString = "%d-%m"
         self.formatStringWithYear = "%d-%m-%Y"
-        self.bday: dict = json.load(open(self.directoryString + "/data.json"))
-        self.occasions: list = json.load(open(self.directoryString + "/occasions.json"))
         self.dates_done: list[str] = json.load(
             open(self.directoryString + "/dates.json"))
 
     def sendEmailOnSpecialOccasion(self, Occasion: dict):
         template_filename = self.directoryString + "/templates/" + Occasion['template']
-
+        
         self.template_to_render = Template(open(template_filename).read())
         context_template = render_template(self.template_to_render, {})
+        if len(Occasion["peopleToGreet"]) <=0:
+            logging.info(f"No Person is found in the occasions {Occasion['name']}")
 
         for person in Occasion['peopleToGreet']:
             message = EmailMessage()
@@ -112,8 +112,10 @@ class BirthdayMail:
                 logging.info(
                     f"The email has been sent to {person['name']} with email {person['mail']} using template {Occasion['template']}"
                 )
+                Occasion['peopleToGreet'].remove(person)
 
-    def message_func(self, receiver_email: str, name: str):
+    def message_func(self, receiver_email: str, name: str)->bool:
+        status: bool = False
         message = EmailMessage()
         message["Subject"] = "Happy Birthday " + name.split("(")[0]
         message["From"] = self.sender_email
@@ -125,17 +127,26 @@ class BirthdayMail:
         context_template = render_template(self.template_to_render,
                                            {"name": name})
         message.set_content(context_template, subtype="html")
-        with smtplib.SMTP_SSL("smtp.gmail.com",
-                              465,
-                              context=ctx) as server:
-            server.login(self.sender_email, self.password)
-            server.send_message(message)
-            logging.info(
-                f"The email has been sent to {name} with email {receiver_email} using template {templaneName}"
-            )
+        try:
+            with smtplib.SMTP_SSL("smtp.gmail.com",
+                                465,
+                                context=ctx) as server:
+                server.login(self.sender_email, self.password)
+                server.send_message(message)
+                logging.info(
+                    f"The email has been sent to {name} with email {receiver_email} using template {templaneName}"
+                )
+                status = True
+        except Exception as e:
+            logging.info("Error sending mail will re-try in an hour.")
+            if e.__class__.__name__ == "gaierror":
+                logging.info("Network error not able to connect to server.")
+                exit(1)
+            
+            status = False
+        return status
 
     def send_mail_from_json(self):
-
         current_date_time = datetime.now()
         current_date_withyear = current_date_time.strftime(
             self.formatStringWithYear)
@@ -144,27 +155,43 @@ class BirthdayMail:
                 f"script for {current_date_withyear} has already been executed"
             )
             return
-        else:
+
+        current_time = current_date_time.strftime(self.formatString)
+        self.bday: dict = json.load(open(self.directoryString + "/data.json"))
+
+
+        match: bool = False
+        success : bool = False
+        for val in self.bday:
+            if current_time == val['date']:
+                success = self.message_func(val['mail'], val['name'])
+                match = True
+                break
+
+        if match and success:
+            self.dates_done.append(current_date_withyear)
+            saveJsontoFile(self.directoryString + "/dates.json",
+                           self.dates_done)           
+        
+        if not match:
+            logging.info("--None has birthday today--")
             self.dates_done.append(current_date_withyear)
             saveJsontoFile(self.directoryString + "/dates.json",
                            self.dates_done)
+    
+    def send_email_special_occassions(self):
+        current_date_time = datetime.now()
+        current_date_withyear = current_date_time.strftime(
+            self.formatStringWithYear)
+        self.occasions: list = json.load(open(self.directoryString + "/occasions.json"))
 
-        current_time = current_date_time.strftime(self.formatString)
-
-        match: bool = False
-        for val in self.bday:
-            if current_time == val['date']:
-                self.message_func(val['mail'], val['name'])
-                match = True
-                break
-        if not match:
-            logging.info("--None has birthday today--")
         for Occasion in self.occasions:
             if current_date_withyear == Occasion['date']:
                 self.sendEmailOnSpecialOccasion(Occasion)
-                self.occasions.remove(Occasion)
-        saveJsontoFile(self.directoryString + "/occasions.json",
+                saveJsontoFile(self.directoryString + "/occasions.json",
                        self.occasions)
+            else:
+                logging.info("--No Special occasion today")
 
     def get_all_bday_info(self, print_all: bool = False):
         lis = []
@@ -215,4 +242,5 @@ class BirthdayMail:
 if __name__ == "__main__":
     birthday = BirthdayMail()
     birthday.send_mail_from_json()
+    birthday.send_email_special_occassions()
     # birthday.get_all_bday_info()
