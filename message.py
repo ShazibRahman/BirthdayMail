@@ -162,7 +162,7 @@ class BirthdayMail:
 
         if self.pending_dates :
             for i in self.pending_dates:
-                if i['val'] != current_time:
+                if i['date'] != current_time:
                     success =  self.message_func(i)
                     if success:
                         self.pending_dates.remove(i)
