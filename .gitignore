@@ -3,3 +3,4 @@ logger.log
 __pycache__
 **.idea**
 **venv**
+**copy**
