@@ -41,6 +41,10 @@ def saveJsontoFile(fileName: str, data: list, indent: int = 4) -> None:
     with open(fileName, "w") as f:
         json.dump(data, f, indent=indent)
 
+def read_json_to_py_objecy(fileName:str)->object:
+    with open(fileName) as f :
+        return json.load(f)
+
 
 def find_next_leap_year(year: int) -> int:
     if year % 4 == 0 and year % 100 != 0 or year % 400 == 0:
@@ -114,7 +118,9 @@ class BirthdayMail:
                 )
                 Occasion['peopleToGreet'].remove(person)
 
-    def message_func(self, receiver_email: str, name: str)->bool:
+    def message_func(self, val:dict)->bool:
+        receiver_email = val['mail']
+        name =  val['name']
         status: bool = False
         message = EmailMessage()
         message["Subject"] = "Happy Birthday " + name.split("(")[0]
@@ -139,6 +145,9 @@ class BirthdayMail:
                 status = True
         except Exception as e:
             logging.info("Error sending mail will re-try in an hour.")
+            if val not in self.pending_dates:
+                self.pending_dates.append(val)
+                logging.info(f"--adding current date {val['date']} in pending dates list")
             if e.__class__.__name__ == "gaierror":
                 logging.info("Network error not able to connect to server.")
                 exit(1)
@@ -146,10 +155,26 @@ class BirthdayMail:
             status = False
         return status
 
+    def check_for_pending_and_send_message(self):
+        _,current_date_string =  self.get_current_date()
+        current_time = _.strftime(self.formatString)
+
+        if self.pending_dates :
+            for i in self.pending_dates:
+                if i['val'] != current_time:
+                    success =  self.message_func(i)
+                    if success:
+                        self.pending_dates.remove(i)
+                        self.dates_done.append(current_date_string)
+                        logging.info("--Sending backlog emails succeed for",i['mail'])
+                    else:
+                        logging.info("--pending dates email failed")
+
+
+
+
     def send_mail_from_json(self):
-        current_date_time = datetime.now()
-        current_date_withyear = current_date_time.strftime(
-            self.formatStringWithYear)
+        current_date_time, current_date_withyear = self.get_current_date()
         if current_date_withyear in self.dates_done:
             logging.info(
                 f"script for {current_date_withyear} has already been executed"
@@ -158,13 +183,16 @@ class BirthdayMail:
 
         current_time = current_date_time.strftime(self.formatString)
         self.bday: dict = json.load(open(self.directoryString + "/data.json"))
+        self.pending_dates :list =  read_json_to_py_objecy(os.path.join(self.directoryString,'pending_dates.json'))
+
+        self.check_for_pending_and_send_message()
 
 
         match: bool = False
         success : bool = False
         for val in self.bday:
             if current_time == val['date']:
-                success = self.message_func(val['mail'], val['name'])
+                success = self.message_func(val)
                 match = True
                 break
 
@@ -178,11 +206,17 @@ class BirthdayMail:
             self.dates_done.append(current_date_withyear)
             saveJsontoFile(self.directoryString + "/dates.json",
                            self.dates_done)
-    
-    def send_email_special_occassions(self):
+
+    def get_current_date(self)->Tuple[datetime,str]:
         current_date_time = datetime.now()
         current_date_withyear = current_date_time.strftime(
             self.formatStringWithYear)
+            
+        return current_date_time,current_date_withyear
+    
+    def send_email_special_occassions(self):
+        _, current_date_withyear = self.get_current_date()
+
         self.occasions: list = json.load(open(self.directoryString + "/occasions.json"))
 
         for Occasion in self.occasions:
