@@ -45,7 +45,6 @@ def saveJsontoFile(fileName: str, data: list, indent: int = 4) -> None:
     logging.info(f"write changes to {fileName=}")
 
 
-
 def read_json_to_py_objecy(fileName: str):
     with open(fileName) as f:
         return json.load(f)
@@ -85,7 +84,7 @@ class BirthdayMail:
             logging.info("----Starting the application-----")
         else:
             logging.info = print
-            
+
         self.template_filename = None
         self.template_to_render = None
         self.directoryString = os.path.dirname(__file__)
@@ -95,7 +94,7 @@ class BirthdayMail:
         self.formatString = "%d-%m"
         self.formatStringWithYear = "%d-%m-%Y"
         self.dates_done: list[str] = json.load(
-            open(os.path.join(self.directoryString,'dates.json'))
+            open(os.path.join(self.directoryString, "dates.json"))
         )
 
     def sendEmailOnSpecialOccasion(self, Occasion: dict):
@@ -148,18 +147,15 @@ class BirthdayMail:
                 )
                 status = True
         except Exception as e:
-            logging.info("Error sending mail will re-try in an hour.")
             status = False
 
         if not status:
-            logging.info("Network  not able to connect to server.")
+            logging.info("Network Error not able to connect to server.")
         return status
 
     def check_for_pending_and_send_message(self):
         current_datetime, _ = self.get_current_date()
-        self.dates_done.sort(
-            key=lambda x: datetime.strptime(x, self.formatStringWithYear)
-        )
+        self.sort_date_dones_files()
         last_run_datetime = datetime.strptime(
             self.dates_done[-1], self.formatStringWithYear
         )
@@ -174,12 +170,14 @@ class BirthdayMail:
             return
         else:
             last_run = last_run_datetime + timedelta(1)
-            last_run_set = set()
+            last_run_set: set[str] = set()
             while last_run < current_datetime:
                 last_run_string = last_run.strftime(self.formatString)
                 last_run_set.add(last_run_string)
                 last_run = last_run + timedelta(1)
-            print(last_run_set)
+            logging.info(
+                f"--trying to send backog emails for dates {[datetime.strptime(x,self.formatString).strftime('%d-%b') for x in last_run_set]}"
+            )
 
             for val in self.bday:
                 if (
@@ -192,16 +190,15 @@ class BirthdayMail:
                         logging.info(
                             f"Backlog email for date {val['date']} and email {val['mail']} has been sent"
                         )
-                       
+
                     else:
                         return False
             for i in last_run_set:
                 self.dates_done.append(i)
                 modified_dates_file = True
-            self.dates_done.sort(key=lambda x: datetime.strptime(x,self.formatStringWithYear))
-            
 
         if modified_dates_file:
+            self.sort_date_dones_files()
             saveJsontoFile(os.path.join(self.directoryString, "dates.json"))
         return True
 
@@ -223,6 +220,7 @@ class BirthdayMail:
 
         match: bool = False
         success: bool = False
+        modified_dates_done_file = False
         for val in self.bday:
             if current_time == val["date"]:
                 success = self.message_func(val)
@@ -230,12 +228,14 @@ class BirthdayMail:
 
         if match and success:
             self.dates_done.append(current_date_withyear)
-
-            saveJsontoFile(self.directoryString + "/dates.json", self.dates_done)
+            modified_dates_done_file = True
 
         if not match:
+            modified_dates_done_file = True
             logging.info("--None has birthday today--")
             self.dates_done.append(current_date_withyear)
+        if modified_dates_done_file:
+            self.sort_date_dones_files()
             saveJsontoFile(self.directoryString + "/dates.json", self.dates_done)
 
     def get_current_date(self) -> Tuple[datetime, str]:
@@ -243,6 +243,11 @@ class BirthdayMail:
         current_date_withyear = current_date_time.strftime(self.formatStringWithYear)
 
         return current_date_time, current_date_withyear
+
+    def sort_date_dones_files(self) -> None:
+        self.dates_done.sort(
+            key=lambda x: datetime.strptime(x, self.formatStringWithYear)
+        )
 
     def send_email_special_occassions(self):
         _, current_date_withyear = self.get_current_date()
@@ -257,6 +262,7 @@ class BirthdayMail:
                 logging.info("--No Special occasion today")
 
     def get_all_bday_info(self, print_all: bool = False):
+        self.bday: dict = json.load(open(self.directoryString + "/data.json"))
         lis = []
         for val in self.bday:
             next_birthday, diff_datetime = self.count_down_for_birthday(val["date"])
