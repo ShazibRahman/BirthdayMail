@@ -32,7 +32,6 @@ ctx.verify_mode = ssl.CERT_REQUIRED
 anacron_user = "Shazib_Anacron"
 
 
-
 def convert(seconds):
     return time.strftime("%H hours %M Minutes %S Seconds to go ", time.gmtime(seconds))
 
@@ -155,7 +154,7 @@ class BirthdayMail:
         return status
 
     def check_for_pending_and_send_message(self):
-        if not self.dates_done or len(self.dates_done) <=0:
+        if not self.dates_done or len(self.dates_done) <= 0:
             logging.info("--No Previous date found--")
             return
         current_datetime, _ = self.get_current_date()
@@ -313,7 +312,7 @@ class BirthdayMail:
 if __name__ == "__main__":
     user = os.environ.get("USER")
     working_directory = os.getcwd()
-    git_dir =  os.path.dirname(__file__)
+    git_dir = os.path.dirname(__file__)
     if user == anacron_user:
         os.system(f"cd {os.path.dirname(__file__)} && git pull")
     birthday = BirthdayMail()
