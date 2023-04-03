@@ -29,6 +29,8 @@ logging.basicConfig(
 
 ctx = ssl.create_default_context()
 ctx.verify_mode = ssl.CERT_REQUIRED
+anacron_user = "Shazib_Anacron"
+
 
 
 def convert(seconds):
@@ -79,8 +81,7 @@ def isGreater(day1: int, month1: int, day2: int, month2: int) -> bool:
 
 class BirthdayMail:
     def __init__(self) -> None:
-        if os.environ.get("USER") == "Shazib_Anacron":
-            logging.info(f"logged in as {os.environ.get('USER')}")
+        if os.environ.get("USER") == anacron_user:
             logging.info("----Starting the application-----")
         else:
             logging.info = print
@@ -124,7 +125,7 @@ class BirthdayMail:
                 )
                 Occasion["peopleToGreet"].remove(person)
 
-    def message_func(self, val: dict) -> bool:
+    def message_func(self, val: dict, pending_mail=False) -> bool:
         receiver_email = val["mail"]
         name = val["name"]
         status: bool = False
@@ -146,7 +147,7 @@ class BirthdayMail:
                     f"The email has been sent to {name} with email {receiver_email} using template {templaneName}"
                 )
                 status = True
-        except Exception as e:
+        except Exception:
             status = False
 
         if not status:
@@ -175,9 +176,11 @@ class BirthdayMail:
                 last_run_string = last_run.strftime(self.formatString)
                 last_run_set.add(last_run_string)
                 last_run = last_run + timedelta(1)
-            logging.info(
-                f"--trying to send backog emails for dates {[datetime.strptime(x,self.formatString).strftime('%d-%b') for x in last_run_set]}"
-            )
+            dates_list = [
+                datetime.strptime(x, self.formatString).strftime("%d-%b")
+                for x in last_run_set
+            ]
+            logging.info(f"--trying to send backog emails for dates {dates_list}")
 
             for val in self.bday:
                 if (
@@ -216,7 +219,7 @@ class BirthdayMail:
         prev_success = self.check_for_pending_and_send_message()
         if not prev_success:
             logging.info("---Sending Backlog email failed---")
-            exit(1)
+            # exit(1)
 
         match: bool = False
         success: bool = False
@@ -305,7 +308,17 @@ class BirthdayMail:
 
 
 if __name__ == "__main__":
+    user = os.environ.get("USER")
+    if user == anacron_user:
+        var = os.system("git pull")
+        if var:
+            logging.info("git pull failed")
     birthday = BirthdayMail()
+    logging.info(f"--logged in as {user=} and {__name__=}")
+
     birthday.send_mail_from_json()
     birthday.send_email_special_occassions()
-    # birthday.get_all_bday_info()
+    if user == anacron_user or True:
+        os.system(f"git add * ")
+        os.system(f"git commit -m 'commit'")
+        os.system("git push -u origin master ")
