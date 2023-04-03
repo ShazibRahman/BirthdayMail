@@ -313,14 +313,15 @@ class BirthdayMail:
 if __name__ == "__main__":
     user = os.environ.get("USER")
     working_directory = os.getcwd()
-    if user == anacron_user or True:
+    git_dir =  os.path.dirname(__file__)
+    if user == anacron_user:
         os.system(f"cd {os.path.dirname(__file__)} && git pull")
     birthday = BirthdayMail()
     logging.info(f"--logged in as {user=} , {__name__=} and {working_directory=}")
 
     birthday.send_mail_from_json()
     birthday.send_email_special_occassions()
-    if user == anacron_user or True:
-        os.system(f"cd {os.path.dirname(__file__)} && git add * ")
-        os.system(f"cd {os.path.dirname(__file__)} && git commit -m 'commit'")
-        os.system(f"cd {os.path.dirname(__file__)} && git push -u origin master ")
+    if user == anacron_user:
+        os.system(f"cd {git_dir} && git add * ")
+        os.system(f"cd {git_dir} && git commit -m 'commit'")
+        os.system(f"cd {git_dir} && git push -u origin master ")
