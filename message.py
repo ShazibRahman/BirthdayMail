@@ -316,7 +316,7 @@ if __name__ == "__main__":
 
     if user == anacron_user or True:
         os.system(f"cd {os.path.dirname(__file__)} && git pull")
-        
+
     birthday = BirthdayMail()
     logging.info(f"--logged in as {user=} , {__name__=} and {working_directory=}")
 
