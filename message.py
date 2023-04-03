@@ -189,19 +189,21 @@ class BirthdayMail:
                 ):
                     success = self.message_func(val)
                     if success:
-                        modified_dates_file = True
                         logging.info(
                             f"Backlog email for date {val['date']} and email {val['mail']} has been sent"
                         )
-                        self.dates_done.append(val["date"])
-                        self.dates_done.sort(
-                            key=lambda x: datetime.strptime(
-                                x, self.formatStringWithYear
-                            )
-                        )
+                       
+                    else:
+                        return False
+            for i in last_run_set:
+                self.dates_done.append(i)
+                modified_dates_file = True
+            self.dates_done.sort(key=lambda x: datetime.strptime(x,self.formatStringWithYear))
+            
 
         if modified_dates_file:
             saveJsontoFile(os.path.join(self.directoryString, "dates.json"))
+        return True
 
     def send_mail_from_json(self):
         current_date_time, current_date_withyear = self.get_current_date()
@@ -214,7 +216,10 @@ class BirthdayMail:
         current_time = current_date_time.strftime(self.formatString)
         self.bday: dict = json.load(open(self.directoryString + "/data.json"))
 
-        self.check_for_pending_and_send_message()
+        prev_success = self.check_for_pending_and_send_message()
+        if not prev_success:
+            logging.info("---Sending Backlog email failed---")
+            exit(1)
 
         match: bool = False
         success: bool = False
