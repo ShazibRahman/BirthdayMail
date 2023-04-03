@@ -155,6 +155,9 @@ class BirthdayMail:
         return status
 
     def check_for_pending_and_send_message(self):
+        if not self.dates_done or len(self.dates_done) <=0:
+            logging.info("--No Previous date found--")
+            return
         current_datetime, _ = self.get_current_date()
         self.sort_date_dones_files()
         last_run_datetime = datetime.strptime(
@@ -219,7 +222,7 @@ class BirthdayMail:
         prev_success = self.check_for_pending_and_send_message()
         if not prev_success:
             logging.info("---Sending Backlog email failed---")
-            # exit(1)
+            return
 
         match: bool = False
         success: bool = False
@@ -309,16 +312,15 @@ class BirthdayMail:
 
 if __name__ == "__main__":
     user = os.environ.get("USER")
-    if user == anacron_user:
-        var = os.system("git pull")
-        if var:
-            logging.info("git pull failed")
+    working_directory = os.getcwd()
+    if user == anacron_user or True:
+        os.system(f"cd {os.path.dirname(__file__)} && git pull")
     birthday = BirthdayMail()
-    logging.info(f"--logged in as {user=} and {__name__=}")
+    logging.info(f"--logged in as {user=} , {__name__=} and {working_directory=}")
 
     birthday.send_mail_from_json()
     birthday.send_email_special_occassions()
     if user == anacron_user or True:
-        os.system(f"git add * ")
-        os.system(f"git commit -m 'commit'")
-        os.system("git push -u origin master ")
+        os.system(f"cd {os.path.dirname(__file__)} && git add * ")
+        os.system(f"cd {os.path.dirname(__file__)} && git commit -m 'commit'")
+        os.system(f"cd {os.path.dirname(__file__)} && git push -u origin master ")
