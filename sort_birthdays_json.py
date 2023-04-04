@@ -1,8 +1,7 @@
 import json
-from typing import List
 
 
-def sortBirthdaysObjectOnKey(birthdays: List[object], key: str) -> list:
+def sortBirthdaysObjectOnKey(birthdays: list, key: str) -> list:
     """
     sort birthdays object on key (date)
     """
@@ -11,7 +10,7 @@ def sortBirthdaysObjectOnKey(birthdays: List[object], key: str) -> list:
     )
 
 
-def readJsonFile(fileName: str) -> List[object]:
+def readJsonFile(fileName: str) -> list:
     with open(fileName, "r") as f:
         return json.load(f)
 

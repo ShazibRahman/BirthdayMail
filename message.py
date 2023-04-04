@@ -36,7 +36,7 @@ def convert(seconds):
     return time.strftime("%H hours %M Minutes %S Seconds to go ", time.gmtime(seconds))
 
 
-def render_template(template, context: dict):
+def render_template(template:Template, context: dict):
     return template.render(context)
 
 
@@ -78,7 +78,7 @@ def isGreater(day1: int, month1: int, day2: int, month2: int) -> bool:
 class BirthdayMail:
     def __init__(self) -> None:
         if os.environ.get("USER") == anacron_user:
-            logging.info("----Starting the application-----")
+            logging.info("----Starting the application----")
 
         else:
             logging.info = print
@@ -225,7 +225,7 @@ class BirthdayMail:
             logging.info(
                 f"script for {current_date_withyear} has already been executed"
             )
-            return
+            exit(0)
 
         current_time = current_date_time.strftime(self.formatString)
         self.bday: dict = json.load(open(self.directoryString + "/data.json"))
@@ -234,7 +234,7 @@ class BirthdayMail:
 
         if not prev_success:
             logging.info("---Sending Backlog email failed---")
-            return
+            exit(1)
 
         match: bool = False
         success: bool = False
