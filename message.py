@@ -82,8 +82,10 @@ class BirthdayMail:
     def __init__(self) -> None:
         if os.environ.get("USER") == anacron_user:
             logging.info("----Starting the application-----")
+            
         else:
             logging.info = print
+        self.logging= logging
 
         self.template_filename = None
         self.template_to_render = None
