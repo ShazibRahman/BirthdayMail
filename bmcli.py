@@ -60,7 +60,6 @@ def cliMethod():
         return
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--logs", type=str, choices=["show", "clear"])
