@@ -20,7 +20,7 @@ except ImportError:
     from jinja2 import Template
 
 logging.basicConfig(
-    filename=os.path.dirname(__file__) + "/logger.log",
+    filename=os.path.join(os.path.dirname(__file__), "logger.log"),
     filemode="a",
     level=logging.DEBUG,
     format="%(asctime)s %(message)s",
@@ -63,10 +63,7 @@ def find_next_leap_year(year: int) -> int:
 
 
 def isLeapYear(year: int) -> bool:
-    if year % 4 == 0 and year % 100 != 0 or year % 400 == 0:
-        return True
-    else:
-        return False
+    return year % 4 == 0 and year % 100 != 0 or year % 400 == 0
 
 
 def isGreater(day1: int, month1: int, day2: int, month2: int) -> bool:
