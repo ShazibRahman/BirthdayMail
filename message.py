@@ -36,7 +36,7 @@ def convert(seconds):
     return time.strftime("%H hours %M Minutes %S Seconds to go ", time.gmtime(seconds))
 
 
-def render_template(template, context):
+def render_template(template, context:dict):
     return template.render(context)
 
 
@@ -167,7 +167,7 @@ class BirthdayMail:
         current_datetime = datetime.strptime(
             current_datetime.strftime(self.formatStringWithYear),
             self.formatStringWithYear,
-        )
+        )# to make datetime format same as the one last_run_date
 
         if last_run_datetime == current_datetime - timedelta(1):
             return
@@ -323,6 +323,7 @@ if __name__ == "__main__":
     birthday.send_mail_from_json()
     birthday.send_email_special_occassions()
     if user == anacron_user or True:
+        logging.info("preparing to run git commands")
         os.system(f"cd {git_dir} && git add * ")
         os.system(f"cd {git_dir} && git commit -m 'commit'")
         os.system(f"cd {git_dir} && git push -u origin master ")
