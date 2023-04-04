@@ -36,7 +36,7 @@ def convert(seconds):
     return time.strftime("%H hours %M Minutes %S Seconds to go ", time.gmtime(seconds))
 
 
-def render_template(template, context:dict):
+def render_template(template, context: dict):
     return template.render(context)
 
 
@@ -82,10 +82,10 @@ class BirthdayMail:
     def __init__(self) -> None:
         if os.environ.get("USER") == anacron_user:
             logging.info("----Starting the application-----")
-            
+
         else:
             logging.info = print
-        self.logging= logging
+        self.logging = logging
 
         self.template_filename = None
         self.template_to_render = None
@@ -95,6 +95,7 @@ class BirthdayMail:
 
         self.formatString = "%d-%m"
         self.formatStringWithYear = "%d-%m-%Y"
+        self.format_late_mail_date = "%d-%b"
         self.dates_done: list[str] = json.load(
             open(os.path.join(self.directoryString, "dates.json"))
         )
@@ -118,6 +119,7 @@ class BirthdayMail:
             message["To"] = person["mail"]
 
             message.set_content(context_template, subtype="html")
+
             with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
                 server.login(self.sender_email, self.password)
                 server.send_message(message)
@@ -134,12 +136,14 @@ class BirthdayMail:
         message["Subject"] = "Happy Birthday " + name.split("(")[0]
         message["From"] = self.sender_email
         message["To"] = receiver_email
+
         templateList = ["template_3.html", "template_2.html", "template_1.html"]
         templaneName = random.choice(templateList)
         self.template_filename = self.directoryString + "/templates/" + templaneName
         self.template_to_render = Template(open(self.template_filename).read())
         context_template = render_template(self.template_to_render, {"name": name})
         message.set_content(context_template, subtype="html")
+
         try:
             with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
                 server.login(self.sender_email, self.password)
@@ -156,35 +160,44 @@ class BirthdayMail:
         return status
 
     def check_for_pending_and_send_message(self):
+
         if not self.dates_done or len(self.dates_done) <= 0:
             logging.info("--No Previous date found--")
             return
+
         current_datetime, _ = self.get_current_date()
         self.sort_date_dones_files()
+
         last_run_datetime = datetime.strptime(
             self.dates_done[-1], self.formatStringWithYear
         )
+
         modified_dates_file = False
 
         current_datetime = datetime.strptime(
             current_datetime.strftime(self.formatStringWithYear),
             self.formatStringWithYear,
-        )# to make datetime format same as the one last_run_date
+        )  # to make datetime format same as the one last_run_date
 
         if last_run_datetime == current_datetime - timedelta(1):
             return
         else:
             last_run = last_run_datetime + timedelta(1)
             last_run_set: set[str] = set()
+
             while last_run < current_datetime:
                 last_run_string = last_run.strftime(self.formatString)
                 last_run_set.add(last_run_string)
                 last_run = last_run + timedelta(1)
+
             dates_list = [
-                datetime.strptime(x, self.formatString).strftime("%d-%b")
+                datetime.strptime(x, self.formatString).strftime(
+                    self.format_late_mail_date
+                )
                 for x in last_run_set
             ]
-            logging.info(f"--trying to send backog emails for dates {dates_list}")
+
+            logging.info(f"--trying to send backlog emails for {dates_list=}")
 
             for val in self.bday:
                 if (
@@ -221,6 +234,7 @@ class BirthdayMail:
         self.bday: dict = json.load(open(self.directoryString + "/data.json"))
 
         prev_success = self.check_for_pending_and_send_message()
+
         if not prev_success:
             logging.info("---Sending Backlog email failed---")
             return
@@ -228,6 +242,7 @@ class BirthdayMail:
         match: bool = False
         success: bool = False
         modified_dates_done_file = False
+
         for val in self.bday:
             if current_time == val["date"]:
                 success = self.message_func(val)
@@ -241,6 +256,7 @@ class BirthdayMail:
             modified_dates_done_file = True
             logging.info("--None has birthday today--")
             self.dates_done.append(current_date_withyear)
+
         if modified_dates_done_file:
             self.sort_date_dones_files()
             saveJsontoFile(self.directoryString + "/dates.json", self.dates_done)
@@ -314,18 +330,8 @@ class BirthdayMail:
 if __name__ == "__main__":
     user = os.environ.get("USER")
     working_directory = os.getcwd()
-    git_dir = os.path.dirname(__file__)
-
-    if user == anacron_user or True:
-        os.system(f"cd {os.path.dirname(__file__)} && git pull")
-
     birthday = BirthdayMail()
     logging.info(f"--logged in as {user=} , {__name__=} and {working_directory=}")
 
     birthday.send_mail_from_json()
     birthday.send_email_special_occassions()
-    if user == anacron_user or True:
-        logging.info("preparing to run git commands")
-        os.system(f"cd {git_dir} && git add * ")
-        os.system(f"cd {git_dir} && git commit -m 'commit'")
-        os.system(f"cd {git_dir} && git push -u origin master ")

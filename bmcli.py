@@ -11,31 +11,32 @@ def readLogs():
 
 
 def clearLogs():
-    with open(loggerPath, "w") as file:
+    with open(loggerPath, "w") as _:
         pass
 
 
 def cliMethod():
     if args.s == "y":
+        os.system(f"cd {os.path.dirname(__file__)} && git pull")
+
         from message import BirthdayMail
 
         user = os.environ.get("USER")
         working_directory = os.getcwd()
         git_dir = os.path.dirname(__file__)
 
-        os.system(f"cd {os.path.dirname(__file__)} && git pull")
-
         birthday = BirthdayMail()
         birthday.logging.info(
-            f"--logged in as {user=} , {__name__=} and {working_directory=}"
+            f"--logged in as {user=} , {__file__=} and {working_directory=}"
         )
 
         birthday.send_mail_from_json()
         birthday.send_email_special_occassions()
-        birthday.logging.info("preparing to run git commands")
+
         os.system(f"cd {git_dir} && git add * ")
         os.system(f"cd {git_dir} && git commit -m 'commit'")
         os.system(f"cd {git_dir} && git push -u origin master ")
+
         return
     if args.logs is not None and args.logs == "show":
         readLogs()
