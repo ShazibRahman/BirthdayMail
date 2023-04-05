@@ -146,10 +146,13 @@ class BirthdayMail:
         message["From"] = self.sender_email
         message["To"] = receiver_email
 
-        templateList = ["template_3.html",
-                        "template_2.html",
-                        "template_1.html"]
-        templaneName = random.choice(templateList)
+        if pending_mail:
+            templaneName = "late.html"
+        else:
+            templateList = ["template_3.html",
+                            "template_2.html",
+                            "template_1.html"]
+            templaneName = random.choice(templateList)
         self.template_filename = os.path.join(
             self.directoryString, "templates", templaneName)
         self.template_to_render = Template(open(self.template_filename).read())
@@ -234,7 +237,8 @@ class BirthdayMail:
 
         if modified_dates_file:
             self.sort_date_dones_files()
-            saveJsontoFile(os.path.join(self.directoryString, "dates.json"),self.dates_done)
+            saveJsontoFile(os.path.join(self.directoryString,
+                           "dates.json"), self.dates_done)
         return True
 
     def send_mail_from_json(self):
