@@ -1,4 +1,5 @@
 import json
+import os
 
 
 def sortBirthdaysObjectOnKey(birthdays: list, key: str) -> list:
@@ -6,7 +7,8 @@ def sortBirthdaysObjectOnKey(birthdays: list, key: str) -> list:
     sort birthdays object on key (date)
     """
     return sorted(
-        birthdays, key=lambda x: x[key].split("-")[1] + "-" + x[key].split("-")[0]
+        birthdays, key=lambda x: x[key].split(
+            "-")[1] + "-" + x[key].split("-")[0]
     )
 
 
@@ -15,15 +17,17 @@ def readJsonFile(fileName: str) -> list:
         return json.load(f)
 
 
-def writeJsonFile(fileName: str, data: list, indent: int = None) -> None:
+def writeJsonFile(fileName: str, data: list, indent: int = 4) -> None:
     with open(fileName, "w") as f:
         json.dump(data, f, indent=indent)
 
 
 def main() -> None:
-    birthdays = readJsonFile("data.json")
+    dir = os.path.dirname(__file__)
+    data_path = os.path.join(dir, 'data.json')
+    birthdays = readJsonFile(data_path)
     birthdays = sortBirthdaysObjectOnKey(birthdays, "date")
-    writeJsonFile("data.json", birthdays, indent=4)
+    writeJsonFile(data_path, birthdays)
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ import random
 from typing import Tuple
 from email.message import EmailMessage
 from datetime import datetime, timedelta
+from rich.console import Console
 
 try:
     from jinja2 import Template
@@ -19,8 +20,15 @@ except ImportError:
         os.system("pip3 install jinja2")
     from jinja2 import Template
 
+
+logger_path = os.path.join(os.path.dirname(__file__), "logger.log")
+
+if not os.path.exists(logger_path):
+    with open(logger_path, "w") as f:
+        pass
+
 logging.basicConfig(
-    filename=os.path.join(os.path.dirname(__file__), "logger.log"),
+    filename=logger_path,
     filemode="a",
     level=logging.DEBUG,
     format="%(asctime)s %(message)s",
@@ -36,7 +44,7 @@ def convert(seconds):
     return time.strftime("%H hours %M Minutes %S Seconds to go ", time.gmtime(seconds))
 
 
-def render_template(template:Template, context: dict):
+def render_template(template: Template, context: dict):
     return template.render(context)
 
 
@@ -81,7 +89,7 @@ class BirthdayMail:
             logging.info("----Starting the application----")
 
         else:
-            logging.info = print
+            logging.info = Console().log
         self.logging = logging
 
         self.template_filename = None
@@ -96,6 +104,9 @@ class BirthdayMail:
         self.dates_done: list[str] = json.load(
             open(os.path.join(self.directoryString, "dates.json"))
         )
+        self.occasion_path = os.path.join(self.directoryString,
+                                          "occasions.json")
+        self.data_path = os.path.join(self.directoryString, "data.json")
 
     def sendEmailOnSpecialOccasion(self, Occasion: dict):
         template_filename = os.path.join(
@@ -105,7 +116,8 @@ class BirthdayMail:
         self.template_to_render = Template(open(template_filename).read())
         context_template = render_template(self.template_to_render, {})
         if len(Occasion["peopleToGreet"]) <= 0:
-            logging.info(f"No Person is found in the occasions {Occasion['name']}")
+            logging.info(
+                f"No Person is found in the occasions {Occasion['name']}")
 
         for person in Occasion["peopleToGreet"]:
             message = EmailMessage()
@@ -134,11 +146,15 @@ class BirthdayMail:
         message["From"] = self.sender_email
         message["To"] = receiver_email
 
-        templateList = ["template_3.html", "template_2.html", "template_1.html"]
+        templateList = ["template_3.html",
+                        "template_2.html",
+                        "template_1.html"]
         templaneName = random.choice(templateList)
-        self.template_filename = self.directoryString + "/templates/" + templaneName
+        self.template_filename = os.path.join(
+            self.directoryString, "templates", templaneName)
         self.template_to_render = Template(open(self.template_filename).read())
-        context_template = render_template(self.template_to_render, {"name": name})
+        context_template = render_template(
+            self.template_to_render, {"name": name})
         message.set_content(context_template, subtype="html")
 
         try:
@@ -153,7 +169,7 @@ class BirthdayMail:
             status = False
 
         if not status:
-            logging.info("Network Error not able to connect to server.")
+            logging.info("---Network Error---")
         return status
 
     def check_for_pending_and_send_message(self):
@@ -181,10 +197,14 @@ class BirthdayMail:
         else:
             last_run = last_run_datetime + timedelta(1)
             last_run_set: set[str] = set()
+            last_run_with_year_set = set()
 
             while last_run < current_datetime:
                 last_run_string = last_run.strftime(self.formatString)
                 last_run_set.add(last_run_string)
+                last_run_with_year_set.add(
+                    last_run.strftime(self.formatStringWithYear)
+                )
                 last_run = last_run + timedelta(1)
 
             dates_list = [
@@ -197,12 +217,10 @@ class BirthdayMail:
             logging.info(f"--trying to send backlog emails for {dates_list=}")
 
             for val in self.bday:
-                if (
-                    val["date"] in last_run_set
-                    and last_run.strftime(self.formatStringWithYear)
-                    not in self.dates_done
-                ):
-                    success = self.message_func(val)
+                if val["date"] in last_run_set:
+                    logging.info(
+                        f"--trying backlog mail dated={val['date']} for email={val['mail']}")
+                    success = self.message_func(val, True)
                     if success:
                         logging.info(
                             f"Backlog email for date {val['date']} and email {val['mail']} has been sent"
@@ -210,13 +228,13 @@ class BirthdayMail:
 
                     else:
                         return False
-            for i in last_run_set:
+            for i in last_run_with_year_set:
                 self.dates_done.append(i)
                 modified_dates_file = True
 
         if modified_dates_file:
             self.sort_date_dones_files()
-            saveJsontoFile(os.path.join(self.directoryString, "dates.json"))
+            saveJsontoFile(os.path.join(self.directoryString, "dates.json"),self.dates_done)
         return True
 
     def send_mail_from_json(self):
@@ -228,7 +246,7 @@ class BirthdayMail:
             exit(0)
 
         current_time = current_date_time.strftime(self.formatString)
-        self.bday: dict = json.load(open(self.directoryString + "/data.json"))
+        self.bday: dict = json.load(open(self.data_path))
 
         prev_success = self.check_for_pending_and_send_message()
 
@@ -256,11 +274,13 @@ class BirthdayMail:
 
         if modified_dates_done_file:
             self.sort_date_dones_files()
-            saveJsontoFile(self.directoryString + "/dates.json", self.dates_done)
+            saveJsontoFile(os.path.join(self.directoryString,
+                           "dates.json"), self.dates_done)
 
     def get_current_date(self) -> Tuple[datetime, str]:
         current_date_time = datetime.now()
-        current_date_withyear = current_date_time.strftime(self.formatStringWithYear)
+        current_date_withyear = current_date_time.strftime(
+            self.formatStringWithYear)
 
         return current_date_time, current_date_withyear
 
@@ -272,26 +292,31 @@ class BirthdayMail:
     def send_email_special_occassions(self):
         _, current_date_withyear = self.get_current_date()
 
-        self.occasions: list = json.load(open(self.directoryString + "/occasions.json"))
+        self.occasions: list = json.load(
+            open(self.occasion_path))
 
         for Occasion in self.occasions:
             if current_date_withyear == Occasion["date"]:
                 self.sendEmailOnSpecialOccasion(Occasion)
-                saveJsontoFile(self.directoryString + "/occasions.json", self.occasions)
+                saveJsontoFile(self.occasion_path, self.occasions)
             else:
                 logging.info("--No Special occasion today")
 
     def get_all_bday_info(self, print_all: bool = False):
-        self.bday: dict = json.load(open(self.directoryString + "/data.json"))
+        self.bday: dict = json.load(
+            open(self.data_path))
         lis = []
         for val in self.bday:
-            next_birthday, diff_datetime = self.count_down_for_birthday(val["date"])
+            next_birthday, diff_datetime = self.count_down_for_birthday(
+                val["date"])
 
-            parse_date_to_look_good = datetime.strftime(next_birthday, "%d %b %Y")
+            parse_date_to_look_good = datetime.strftime(
+                next_birthday, "%d %b %Y")
             days_rem_mes = f"{diff_datetime.days} days {convert(diff_datetime.seconds)}"
 
             lis.append(
-                [diff_datetime.days, val["name"], parse_date_to_look_good, days_rem_mes]
+                [diff_datetime.days, val["name"],
+                    parse_date_to_look_good, days_rem_mes]
             )
         lis.sort()
         if not print_all:
@@ -319,8 +344,10 @@ class BirthdayMail:
         self, birthdayString: str
     ) -> tuple[datetime, timedelta]:
         today = datetime.now()
-        birthdayString = birthdayString + "-" + str(self.nextBirthYear(birthdayString))
-        birthday_ = datetime.strptime(birthdayString, self.formatStringWithYear)
+        birthdayString = birthdayString + "-" + \
+            str(self.nextBirthYear(birthdayString))
+        birthday_ = datetime.strptime(
+            birthdayString, self.formatStringWithYear)
         return birthday_, birthday_ - today
 
 
@@ -328,7 +355,8 @@ if __name__ == "__main__":
     user = os.environ.get("USER")
     working_directory = os.getcwd()
     birthday = BirthdayMail()
-    logging.info(f"--logged in as {user=} , {__name__=} and {working_directory=}")
+    logging.info(
+        f"--logged in as {user=} , {__name__=} and {working_directory=}")
 
     birthday.send_mail_from_json()
     birthday.send_email_special_occassions()

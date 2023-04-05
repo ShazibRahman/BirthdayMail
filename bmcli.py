@@ -2,7 +2,7 @@ import argparse
 import os
 
 
-loggerPath = os.path.dirname(__file__) + "/logger.log"
+loggerPath = os.path.join(os.path.dirname(__file__), "logger.log")
 anacron_user = "Shazib_Anacron"
 
 
@@ -22,12 +22,11 @@ def cliMethod():
         from message import BirthdayMail
 
         user = os.environ.get("USER")
-        working_directory = os.getcwd()
         git_dir = os.path.dirname(__file__)
 
         birthday = BirthdayMail()
         birthday.logging.info(
-            f"--logged in as {user=} , {__file__=} and {working_directory=}"
+            f"--logged in as {user=}"
         )
 
         birthday.send_mail_from_json()
