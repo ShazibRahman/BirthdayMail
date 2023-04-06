@@ -15,9 +15,9 @@ try:
 
 except ImportError:
     if os.name == "nt":
-        os.system("pip install jinja2")
+        os.system("pip install -r requirement.txt")
     else:
-        os.system("pip3 install jinja2")
+        os.system("pip3 install -r requirement.txt")
     from jinja2 import Template
 
 

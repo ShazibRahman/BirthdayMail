@@ -4,6 +4,8 @@ import os
 
 loggerPath = os.path.join(os.path.dirname(__file__), "logger.log")
 anacron_user = "Shazib_Anacron"
+git_dir = os.path.dirname(__file__)
+
 
 
 def readLogs():
@@ -17,12 +19,11 @@ def clearLogs():
 
 def cliMethod():
     if args.s == "y":
-        os.system(f"cd {os.path.dirname(__file__)} && git pull")
+        os.system(f"cd {git_dir} && git pull")
 
         from message import BirthdayMail
 
         user = os.environ.get("USER")
-        git_dir = os.path.dirname(__file__)
 
         birthday = BirthdayMail()
         birthday.logging.info(
