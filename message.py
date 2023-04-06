@@ -179,7 +179,7 @@ class BirthdayMail:
 
         if not self.dates_done or len(self.dates_done) <= 0:
             logging.info("--No Previous date found--")
-            return
+            return True
 
         current_datetime, _ = self.get_current_date()
         self.sort_date_dones_files()
@@ -196,7 +196,7 @@ class BirthdayMail:
         )  # to make datetime format same as the one last_run_date
 
         if last_run_datetime == current_datetime - timedelta(1):
-            return
+            return True
         else:
             last_run = last_run_datetime + timedelta(1)
             last_run_set: set[str] = set()
