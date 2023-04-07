@@ -7,7 +7,6 @@ anacron_user = "Shazib_Anacron"
 git_dir = os.path.dirname(__file__)
 
 
-
 def readLogs():
     os.system(f"bat --paging=never {loggerPath}")
 

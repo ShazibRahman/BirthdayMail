@@ -83,6 +83,17 @@ def isGreater(day1: int, month1: int, day2: int, month2: int) -> bool:
         return False
 
 
+def send_mail(sender_email: str, password: str, message: EmailMessage):
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
+            server.login(sender_email, password)
+            server.send_message(message)
+    except:
+        logging.error("---Network Error---")
+        return False
+    return True
+
+
 class BirthdayMail:
     def __init__(self) -> None:
         if os.environ.get("USER") == anacron_user:
@@ -128,19 +139,18 @@ class BirthdayMail:
             message["To"] = person["mail"]
 
             message.set_content(context_template, subtype="html")
-
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
-                server.login(self.sender_email, self.password)
-                server.send_message(message)
+            if send_mail(self.sender_email, self.password, message):
                 logging.info(
                     f"The email has been sent to {person['name']} with email {person['mail']} using template {Occasion['template']}"
                 )
-                Occasion["peopleToGreet"].remove(person)
+            else:
+                exit(1)
+
+            Occasion["peopleToGreet"].remove(person)
 
     def message_func(self, val: dict, pending_mail=False) -> bool:
         receiver_email = val["mail"]
         name = val["name"]
-        status: bool = False
         message = EmailMessage()
         message["Subject"] = "Happy Birthday " + name.split("(")[0]
         message["From"] = self.sender_email
@@ -158,22 +168,9 @@ class BirthdayMail:
         self.template_to_render = Template(open(self.template_filename).read())
         context_template = render_template(
             self.template_to_render, {"name": name})
+
         message.set_content(context_template, subtype="html")
-
-        try:
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
-                server.login(self.sender_email, self.password)
-                server.send_message(message)
-                logging.info(
-                    f"The email has been sent to {name} with email {receiver_email} using template {templaneName}"
-                )
-                status = True
-        except Exception:
-            status = False
-
-        if not status:
-            logging.info("---Network Error---")
-        return status
+        return send_mail(self.sender_email, self.password, message)
 
     def check_for_pending_and_send_message(self):
 
