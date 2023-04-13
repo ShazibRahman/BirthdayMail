@@ -42,12 +42,18 @@ def cliMethod():
             birthday.logging.info(
                 f"--repository has uncommited changes"
             )
-            response = subprocess.run([
+            resp = subprocess.run([
                 "git", "stash", "save"
             ], shell=True, capture_output=True)
             birthday.logging.info(
                 f"--stashed changes"
             )
+        if response.returncode != 0:
+            birthday.logging.info(
+                f"--error pulling changes"
+            )
+            birthday.git_command_failed_mail(response.stderr.decode(), "pull")
+            return
         from message import BirthdayMail
         birthday = BirthdayMail()
         birthday.get_all_bday_info()
