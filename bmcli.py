@@ -3,6 +3,20 @@ import os
 from message import BirthdayMail
 birthday = BirthdayMail()
 
+try:
+    from git import Repo
+except:
+    birthday.logging.info("GitPython not installed")
+    birthday.logging.info("Installing GitPython")
+    birthday.logging.info("Please wait...")
+    birthday.logging.info("This may take a while")
+    if os.name == "posix":
+        os.system("pip3 install gitpython")
+    else:
+        os.system("pip install gitpython")
+    from git import Repo
+    birthday.logging.info("GitPython installed successfully")
+
 
 loggerPath = os.path.join(os.path.dirname(__file__), "logger.log")
 anacron_user = "Shazib_Anacron"
@@ -26,9 +40,34 @@ def cliMethod():
         birthday.logging.info(
             f"--logged in as {user=}"
         )
+        repo = Repo(git_dir)
+        birthday.logging.info("--checking for updates--")
+        if repo.remotes.origin.url == "":
+            birthday.logging.info("No remote url found")
+            birthday.logging.info("Please add remote url")
+            birthday.logging.info("Aborting...")
+            return
+        try:
+            repo.remotes.origin.pull()
+            birthday.logging.info("--update successful--")
+        except Exception as e:
+            birthday.logging.info("--update failed--", e.__cause__)
+            birthday.logging.info("Aborting...")
+            return
 
         birthday.send_mail_from_json()
         birthday.send_email_special_occassions()
+
+        birthday.logging.info("--pushing changes--")
+        try:
+            repo.git.add(".")
+            repo.git.commit("-m", "Update")
+            repo.remotes.origin.push()
+            birthday.logging.info("--push successful--")
+        except:
+            birthday.logging.info("--push failed--")
+            birthday.logging.info("Aborting...")
+            return
 
         return
     if args.logs is not None and args.logs == "show":
