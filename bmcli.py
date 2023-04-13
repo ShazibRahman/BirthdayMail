@@ -41,21 +41,34 @@ def cliMethod():
             f"--logged in as {user=}"
         )
         repo = Repo(git_dir)
-        birthday.logging.info("--checking for updates--")
         if repo.remotes.origin.url == "":
             birthday.logging.info("No remote url found")
             birthday.logging.info("Please add remote url")
             birthday.logging.info("Aborting...")
             return
+        if repo.is_dirty():
+            birthday.logging.info("--repo is dirty--")
+            repo.git.stash('save')
+            birthday.logging.info("--stashed changes--")
+
+        birthday.logging.info("--checking for updates--")
+
         try:
             repo.remotes.origin.pull()
             birthday.logging.info("--update successful--")
 
         except Exception as e:
-            birthday.logging.info("--update failed--", e.__cause__)
+            birthday.logging.info("--update failed--", str(e))
             birthday.logging.info("Aborting...")
-            birthday.git_command_failed_mail(e.__cause__, "pull")
+            birthday.git_command_failed_mail(str(e), "pull")
             return
+        finally:
+            if repo.is_dirty():
+                repo.git.stash('pop')
+                birthday.logging.info("--popped changes--")
+                repo.git.add(".")
+                repo.git.commit("-m", "Update")
+                repo.remotes.origin.push()
 
         birthday.send_mail_from_json()
         birthday.send_email_special_occassions()
@@ -66,10 +79,10 @@ def cliMethod():
             repo.git.commit("-m", "Update")
             repo.remotes.origin.push()
             birthday.logging.info("--push successful--")
-        except:
+        except Exception as e:
             birthday.logging.info("--push failed--")
             birthday.logging.info("Aborting...")
-            birthday.git_command_failed_mail(e.__cause__, "push")
+            birthday.git_command_failed_mail(str(e), "push")
             return
 
         return
