@@ -50,9 +50,11 @@ def cliMethod():
         try:
             repo.remotes.origin.pull()
             birthday.logging.info("--update successful--")
+
         except Exception as e:
             birthday.logging.info("--update failed--", e.__cause__)
             birthday.logging.info("Aborting...")
+            birthday.git_command_failed_mail(e.__cause__, "pull")
             return
 
         birthday.send_mail_from_json()
@@ -67,6 +69,7 @@ def cliMethod():
         except:
             birthday.logging.info("--push failed--")
             birthday.logging.info("Aborting...")
+            birthday.git_command_failed_mail(e.__cause__, "push")
             return
 
         return

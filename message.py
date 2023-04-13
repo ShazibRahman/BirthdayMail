@@ -351,6 +351,14 @@ class BirthdayMail:
             birthdayString, self.formatStringWithYear)
         return birthday_, birthday_ - today
 
+    def git_command_failed_mail(self, message: str, subject: str = "Git Command Failed") -> None:
+        message = EmailMessage()
+        message["Subject"] = subject
+        message["From"] = self.sender_email
+        message["To"] = self.sender_email
+        message.set_content(message)
+        send_mail(self.sender_email, self.password, message)
+
 
 if __name__ == "__main__":
     user = os.environ.get("USER")
