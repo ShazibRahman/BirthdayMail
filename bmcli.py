@@ -64,7 +64,6 @@ def cliMethod():
             return
         finally:
             repo.git.stash('apply')
-
             birthday.logging.info("--popped changes--")
 
         birthday.send_mail_from_json()
