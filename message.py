@@ -88,8 +88,8 @@ def send_mail(sender_email: str, password: str, message: EmailMessage):
         with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
             server.login(sender_email, password)
             server.send_message(message)
-    except:
-        logging.error("---Network Error---")
+    except Exception as e:
+        logging.error("---Network Error---", str(e))
         return False
     return True
 
