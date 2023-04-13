@@ -66,9 +66,6 @@ def cliMethod():
             repo.git.stash('apply')
 
             birthday.logging.info("--popped changes--")
-            repo.git.add(".")
-            repo.git.commit("-m", "Update")
-            repo.remotes.origin.push()
 
         birthday.send_mail_from_json()
         birthday.send_email_special_occassions()
