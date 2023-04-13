@@ -63,12 +63,12 @@ def cliMethod():
             birthday.git_command_failed_mail(str(e), "pull")
             return
         finally:
-            if repo.is_dirty():
-                repo.git.stash('apply')
-                birthday.logging.info("--popped changes--")
-                repo.git.add(".")
-                repo.git.commit("-m", "Update")
-                repo.remotes.origin.push()
+            repo.git.stash('apply')
+
+            birthday.logging.info("--popped changes--")
+            repo.git.add(".")
+            repo.git.commit("-m", "Update")
+            repo.remotes.origin.push()
 
         birthday.send_mail_from_json()
         birthday.send_email_special_occassions()
