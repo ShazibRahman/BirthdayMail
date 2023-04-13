@@ -112,9 +112,6 @@ class BirthdayMail:
         self.formatString = "%d-%m"
         self.formatStringWithYear = "%d-%m-%Y"
         self.format_late_mail_date = "%d-%b"
-        self.dates_done: list[str] = json.load(
-            open(os.path.join(self.directoryString, "dates.json"))
-        )
         self.occasion_path = os.path.join(self.directoryString,
                                           "occasions.json")
         self.data_path = os.path.join(self.directoryString, "data.json")
@@ -239,6 +236,9 @@ class BirthdayMail:
         return True
 
     def send_mail_from_json(self):
+        self.dates_done: list[str] = json.load(
+            open(os.path.join(self.directoryString, "dates.json"))
+        )
         current_date_time, current_date_withyear = self.get_current_date()
         if current_date_withyear in self.dates_done:
             logging.info(
