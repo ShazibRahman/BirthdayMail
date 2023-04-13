@@ -26,6 +26,11 @@ def cliMethod():
         birthday.logging.info(
             f"--logged in as {user=}"
         )
+        ssh_return = subprocess.run(
+            f"ssh - T git@github.com", shell=True, capture_output=True)
+        birthday.logging.info(
+            f"ssh return code {ssh_return}"
+        )
         pull_return = subprocess.run(
             f"git -C {git_dir} pull", shell=True, capture_output=True)
         if pull_return.returncode != 0:
