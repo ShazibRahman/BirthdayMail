@@ -1,21 +1,8 @@
 import argparse
 import os
 from message import BirthdayMail
+import subprocess
 birthday = BirthdayMail()
-
-try:
-    from git import Repo
-except:
-    birthday.logging.info("GitPython not installed")
-    birthday.logging.info("Installing GitPython")
-    birthday.logging.info("Please wait...")
-    birthday.logging.info("This may take a while")
-    if os.name == "posix":
-        os.system("pip3 install gitpython")
-    else:
-        os.system("pip install gitpython")
-    from git import Repo
-    birthday.logging.info("GitPython installed successfully")
 
 
 loggerPath = os.path.join(os.path.dirname(__file__), "logger.log")
@@ -40,48 +27,73 @@ def cliMethod():
         birthday.logging.info(
             f"--logged in as {user=}"
         )
-        repo = Repo(git_dir)
-        birthday.logging.info(repo.branches)
-        if repo.remotes.origin.url == "":
-            birthday.logging.info("No remote url found")
-            birthday.logging.info("Please add remote url")
-            birthday.logging.info("Aborting...")
-            return
-        if repo.is_dirty():
-            birthday.logging.info("--repo is dirty--")
-            repo.git.stash('save')
-            birthday.logging.info("--stashed changes--")
-
-        birthday.logging.info("--checking for updates--")
-
-        try:
-            repo.remotes.origin.pull()
-            birthday.logging.info("--update successful--")
-
-        except Exception as e:
-            birthday.logging.info("--update failed--", str(e))
-            birthday.logging.info("Aborting...")
-            birthday.git_command_failed_mail(str(e), "pull")
-            return
-        finally:
-            repo.git.stash('apply')
-            birthday.logging.info("--popped changes--")
-
-        birthday.send_mail_from_json()
+        response = subprocess.run(
+            f"git -C {git_dir} pull", shell=True, capture_output=True
+        )
+        if "Already up to date." in response.stdout.decode():
+            birthday.logging.info(
+                f"--repository alreay up to date"
+            )
+        elif "Updating" in response.stdout.decode():
+            birthday.logging.info(
+                f"--repository updated"
+            )
+        elif "Changes not staged for commit" in response.stdout.decode():
+            birthday.logging.info(
+                f"--repository has uncommited changes"
+            )
+            response = subprocess.run([
+                "git", "stash", "save"
+            ], shell=True, capture_output=True)
+            birthday.logging.info(
+                f"--stashed changes"
+            )
+        from message import BirthdayMail
+        birthday = BirthdayMail()
+        birthday.get_all_bday_info()
         birthday.send_email_special_occassions()
+        response = subprocess.run([
+            "git", "stash", "pop"
 
-        birthday.logging.info("--pushing changes--")
-        try:
-            repo.git.add(".")
-            repo.git.commit("-m", "Update")
-            repo.remotes.origin.push()
-            birthday.logging.info("--push successful--")
-        except Exception as e:
-            birthday.logging.info("--push failed--")
-            birthday.logging.info("Aborting...")
-            birthday.git_command_failed_mail(str(e), "push")
-            birthday.logging.info(str(e))
-            return
+        ])
+        response = subprocess.run([
+            "git", "add", "."
+
+        ])
+        if response.returncode == 0:
+            birthday.logging.info(
+                f"--added changes"
+            )
+        else:
+            birthday.logging.info(
+                f"--error adding changes"
+            )
+            birthday.git_command_failed_mail(response.stderr.decode(), "add")
+        response = subprocess.run([
+            "git", "commit", "-m", f"updated on {birthday.dates_done[-1]}"
+
+        ])
+        if response.returncode == 0:
+            birthday.logging.info(
+                f"--commited changes"
+            )
+        else:
+            birthday.logging.info(
+                f"--error committing changes"
+            )
+            birthday.git_command_failed_mail(
+                response.stderr.decode(), "commit")
+        response = subprocess.run([
+            "git", "push", "origin", "master"
+
+        ])
+        if response.returncode == 0:
+            birthday.logging.info(f"--pushed changes")
+        else:
+            birthday.logging.info(
+                f"--error pushing changes"
+            )
+            birthday.git_command_failed_mail(response.stderr.decode(), "push")
 
         return
     if args.logs is not None and args.logs == "show":
