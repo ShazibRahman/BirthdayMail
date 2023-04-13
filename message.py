@@ -351,6 +351,8 @@ class BirthdayMail:
         return birthday_, birthday_ - today
 
     def git_command_failed_mail(self, body: str, subject: str = "Git Command Failed") -> None:
+        if ("Your branch is up to date" in body) or ("nothing to commit" in body):
+            return
         message = EmailMessage()
         message["Subject"] = subject
         message["From"] = self.sender_email
