@@ -96,7 +96,7 @@ def send_mail(sender_email: str, password: str, message: EmailMessage):
 
 class BirthdayMail:
     def __init__(self) -> None:
-        if os.environ.get("USER") == anacron_user:
+        if os.environ.get("USER") == anacron_user or True:
             logging.info("----Starting the application----")
 
         else:

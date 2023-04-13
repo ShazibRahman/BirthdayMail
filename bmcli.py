@@ -1,22 +1,8 @@
 import argparse
 import os
+import subprocess
 from message import BirthdayMail
 birthday = BirthdayMail()
-
-try:
-    from git import Repo
-except:
-    birthday.logging.info("GitPython not installed")
-    birthday.logging.info("Installing GitPython")
-    birthday.logging.info("Please wait...")
-    birthday.logging.info("This may take a while")
-    if os.name == "posix":
-        os.system("pip3 install gitpython")
-    else:
-        os.system("pip install gitpython")
-    from git import Repo
-    birthday.logging.info("GitPython installed successfully")
-
 
 loggerPath = os.path.join(os.path.dirname(__file__), "logger.log")
 anacron_user = "Shazib_Anacron"
@@ -40,49 +26,48 @@ def cliMethod():
         birthday.logging.info(
             f"--logged in as {user=}"
         )
-        repo = Repo(git_dir)
-        if repo.remotes.origin.url == "":
-            birthday.logging.info("No remote url found")
-            birthday.logging.info("Please add remote url")
-            birthday.logging.info("Aborting...")
+        pull_return = subprocess.run(
+            f"git -C {git_dir} pull", shell=True, capture_output=True)
+        if pull_return.returncode != 0:
+            birthday.logging.info(
+                f"git pull failed with return code {pull_return}"
+            )
+            birthday.git_command_failed_mail(
+                pull_return.stderr.decode(), "pull")
             return
-        if repo.is_dirty():
-            birthday.logging.info("--repo is dirty--")
-            repo.git.stash('save')
-            birthday.logging.info("--stashed changes--")
-
-        birthday.logging.info("--checking for updates--")
-
-        try:
-            repo.remotes.origin.pull()
-            birthday.logging.info("--update successful--")
-
-        except Exception as e:
-            birthday.logging.info("--update failed--", str(e))
-            birthday.logging.info("Aborting...")
-            birthday.git_command_failed_mail(str(e), "pull")
-            return
-        finally:
-            repo.git.stash('apply')
-            birthday.logging.info("--popped changes--")
 
         birthday.send_mail_from_json()
         birthday.send_email_special_occassions()
-
-        birthday.logging.info("--pushing changes--")
-        try:
-            repo.git.add(".")
-            repo.git.commit("-m", "Update")
-            repo.remotes.origin.push()
-            birthday.logging.info("--push successful--")
-        except Exception as e:
-            birthday.logging.info("--push failed--")
-            birthday.logging.info("Aborting...")
-            birthday.git_command_failed_mail(str(e), "push")
-            birthday.logging.info(str(e))
+        add_return = subprocess.run(
+            f"git -C {git_dir} add .", shell=True, capture_output=True)
+        if add_return.returncode != 0:
+            birthday.logging.info(
+                f"git add failed with return code {add_return}"
+            )
+            birthday.git_command_failed_mail(
+                add_return.stderr.decode(), "add")
             return
-
+        commit_return = subprocess.run(
+            f"git -C {git_dir} commit -m 'auto commit'", shell=True, capture_output=True)
+        if commit_return.returncode != 0:
+            birthday.logging.info(
+                f"git commit failed with return code {commit_return}"
+            )
+            birthday.git_command_failed_mail(
+                commit_return.stderr.decode(), "commit")
+            return
+        push_return = subprocess.run(
+            f"git -C {git_dir} push", shell=True, capture_output=True)
+        if push_return.returncode != 0:
+            birthday.logging.info(
+                f"git push failed with return code {push_return}"
+            )
+            birthday.git_command_failed_mail(
+                push_return.stderr.decode(), "push")
+            return
+        birthday.logging.info(f"git push successful")
         return
+
     if args.logs is not None and args.logs == "show":
         readLogs()
         return
