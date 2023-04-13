@@ -64,7 +64,7 @@ def cliMethod():
             return
         finally:
             if repo.is_dirty():
-                repo.git.stash('pop')
+                repo.git.stash('apply')
                 birthday.logging.info("--popped changes--")
                 repo.git.add(".")
                 repo.git.commit("-m", "Update")
