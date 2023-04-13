@@ -26,51 +26,9 @@ def cliMethod():
         birthday.logging.info(
             f"--logged in as {user=}"
         )
-        ssh_return = subprocess.run(
-            f"ssh - T git@github.com", shell=True, capture_output=True)
-        birthday.logging.info(
-            f"ssh return code {ssh_return}"
-        )
-        pull_return = subprocess.run(
-            f"git -C {git_dir} pull", shell=True, capture_output=True)
-        if pull_return.returncode != 0:
-            birthday.logging.info(
-                f"git pull failed with return code {pull_return}"
-            )
-            birthday.git_command_failed_mail(
-                pull_return.stderr.decode(), "pull")
-            return
-
         birthday.send_mail_from_json()
         birthday.send_email_special_occassions()
-        add_return = subprocess.run(
-            f"git -C {git_dir} add .", shell=True, capture_output=True)
-        if add_return.returncode != 0:
-            birthday.logging.info(
-                f"git add failed with return code {add_return}"
-            )
-            birthday.git_command_failed_mail(
-                add_return.stderr.decode(), "add")
-            return
-        commit_return = subprocess.run(
-            f"git -C {git_dir} commit -m 'auto commit'", shell=True, capture_output=True)
-        if commit_return.returncode != 0:
-            birthday.logging.info(
-                f"git commit failed with return code {commit_return}"
-            )
-            birthday.git_command_failed_mail(
-                commit_return.stderr.decode(), "commit")
-            return
-        push_return = subprocess.run(
-            f"git -C {git_dir} push", shell=True, capture_output=True)
-        if push_return.returncode != 0:
-            birthday.logging.info(
-                f"git push failed with return code {push_return}"
-            )
-            birthday.git_command_failed_mail(
-                push_return.stderr.decode(), "push")
-            return
-        birthday.logging.info(f"git push successful")
+
         return
 
     if args.logs is not None and args.logs == "show":
