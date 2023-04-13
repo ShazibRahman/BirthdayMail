@@ -1,5 +1,7 @@
 import argparse
 import os
+from message import BirthdayMail
+birthday = BirthdayMail()
 
 
 loggerPath = os.path.join(os.path.dirname(__file__), "logger.log")
@@ -18,23 +20,15 @@ def clearLogs():
 
 def cliMethod():
     if args.s == "y":
-        os.system(f"cd {git_dir} && git pull")
-
-        from message import BirthdayMail
 
         user = os.environ.get("USER")
 
-        birthday = BirthdayMail()
         birthday.logging.info(
             f"--logged in as {user=}"
         )
 
         birthday.send_mail_from_json()
         birthday.send_email_special_occassions()
-
-        os.system(f"cd {git_dir} && git add * ")
-        os.system(f"cd {git_dir} && git commit -m 'commit'")
-        os.system(f"cd {git_dir} && git push -u origin master ")
 
         return
     if args.logs is not None and args.logs == "show":
@@ -47,16 +41,10 @@ def cliMethod():
         readLogs()
         return
     if args.b == "y":
-        from message import BirthdayMail
-
-        birth = BirthdayMail()
-        birth.get_all_bday_info()
+        birthday.get_all_bday_info()
         return
     if args.b == "a":
-        from message import BirthdayMail
-
-        birth = BirthdayMail()
-        birth.get_all_bday_info(True)
+        birthday.get_all_bday_info(True)
         return
 
 
