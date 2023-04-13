@@ -83,6 +83,7 @@ def cliMethod():
             birthday.logging.info("--push failed--")
             birthday.logging.info("Aborting...")
             birthday.git_command_failed_mail(str(e), "push")
+            birthday.logging.info(str(e))
             return
 
         return
