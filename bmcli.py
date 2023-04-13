@@ -41,6 +41,7 @@ def cliMethod():
             f"--logged in as {user=}"
         )
         repo = Repo(git_dir)
+        birthday.logging.info(repo.branches)
         if repo.remotes.origin.url == "":
             birthday.logging.info("No remote url found")
             birthday.logging.info("Please add remote url")
