@@ -2,7 +2,6 @@ import argparse
 import os
 import subprocess
 from message import BirthdayMail
-birthday = BirthdayMail()
 
 loggerPath = os.path.join(os.path.dirname(__file__), "logger.log")
 anacron_user = "Shazib_Anacron"
@@ -19,6 +18,17 @@ def clearLogs():
 
 
 def cliMethod():
+    if args.logs is not None and args.logs == "show":
+        readLogs()
+        return
+    if args.logs is not None and args.logs == "clear":
+        clearLogs()
+        return
+    if args.logs is None and args.b is None:
+        readLogs()
+        return
+    birthday = BirthdayMail()
+
     if args.s == "y":
 
         user = os.environ.get("USER")
@@ -31,15 +41,6 @@ def cliMethod():
 
         return
 
-    if args.logs is not None and args.logs == "show":
-        readLogs()
-        return
-    if args.logs is not None and args.logs == "clear":
-        clearLogs()
-        return
-    if args.logs is None and args.b is None:
-        readLogs()
-        return
     if args.b == "y":
         birthday.get_all_bday_info()
         return
