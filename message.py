@@ -8,7 +8,6 @@ import random
 from typing import Tuple
 from email.message import EmailMessage
 from datetime import datetime, timedelta
-from rich.console import Console
 
 try:
     from jinja2 import Template
@@ -30,7 +29,7 @@ if not os.path.exists(logger_path):
 logging.basicConfig(
     filename=logger_path,
     filemode="a",
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s %(message)s",
     datefmt="%m/%d/%Y %I:%M:%S %p",
 )
@@ -96,11 +95,8 @@ def send_mail(sender_email: str, password: str, message: EmailMessage):
 
 class BirthdayMail:
     def __init__(self) -> None:
-        if os.environ.get("USER") == anacron_user or True:
-            logging.info("----Starting the application----")
 
-        else:
-            logging.info = Console().log
+        logging.info("----Starting the application----")
         self.logging = logging
 
         self.template_filename = None
@@ -108,6 +104,11 @@ class BirthdayMail:
         self.directoryString = os.path.dirname(__file__)
         self.sender_email: str = os.environ.get("shazmail")  # type: ignore
         self.password: str = os.environ.get("shazPassword")  # type: ignore
+        user = os.environ.get("USER")
+
+        birthday.logging.info(
+            f"--logged in as {user=}"
+        )
 
         self.formatString = "%d-%m"
         self.formatStringWithYear = "%d-%m-%Y"

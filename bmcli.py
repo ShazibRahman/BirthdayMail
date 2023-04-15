@@ -4,11 +4,11 @@ from message import BirthdayMail
 
 loggerPath = os.path.join(os.path.dirname(__file__), "logger.log")
 anacron_user = "Shazib_Anacron"
-git_dir = os.path.dirname(__file__)
 
 
 def readLogs():
     os.system(f"bat --paging=never {loggerPath}")
+    return
 
 
 def clearLogs():
@@ -17,24 +17,18 @@ def clearLogs():
 
 
 def cliMethod():
-    if args.logs is not None and args.logs == "show":
+    if args.logs and args.logs == "show":
         readLogs()
         return
-    if args.logs is not None and args.logs == "clear":
+    if args.logs and args.logs == "clear":
         clearLogs()
         return
-    if args.logs is None and args.b is None:
+    if args.logs is None and args.b is None and args.s is None:
         readLogs()
         return
     birthday = BirthdayMail()
 
     if args.s == "y":
-
-        user = os.environ.get("USER")
-
-        birthday.logging.info(
-            f"--logged in as {user=}"
-        )
         birthday.send_mail_from_json()
         birthday.send_email_special_occassions()
 
