@@ -1,6 +1,5 @@
 import argparse
 import os
-import subprocess
 from message import BirthdayMail
 
 loggerPath = os.path.join(os.path.dirname(__file__), "logger.log")
