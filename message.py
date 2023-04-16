@@ -99,8 +99,6 @@ class BirthdayMail:
 
         logging.info("----Starting the application----")
         self.logging = logging
-        self.gdrive = GDrive()
-        self.download()
 
         self.template_filename = None
         self.template_to_render = None
@@ -249,6 +247,8 @@ class BirthdayMail:
                 f"script for {current_date_withyear} has already been executed"
             )
             exit(1)
+        self.gdrive = GDrive()
+        self.download()
         current_time = current_date_time.strftime(self.formatString)
         self.bday: dict = json.load(open(self.data_path))
 
