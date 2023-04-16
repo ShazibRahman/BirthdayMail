@@ -1,6 +1,12 @@
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
 import os
+try:
+    from pydrive.auth import GoogleAuth
+    from pydrive.drive import GoogleDrive
+except ImportError:
+    if os.name == "nt":
+        os.system("pip install -r requirement.txt")
+    else:
+        os.system("pip3 install -r requirement.txt")
 
 CRED_FILE = os.path.join(os.path.dirname(__file__), "credentials.json")
 FILE_PATH = os.path.join(os.path.dirname(__file__), "..", 'dates.json')
