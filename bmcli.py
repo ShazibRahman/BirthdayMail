@@ -31,6 +31,7 @@ def cliMethod():
     if args.s == "y":
         birthday.send_mail_from_json()
         birthday.send_email_special_occassions()
+        birthday.upload()
 
         return
 

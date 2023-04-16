@@ -8,6 +8,7 @@ import random
 from typing import Tuple
 from email.message import EmailMessage
 from datetime import datetime, timedelta
+from gdrive.GDrive import GDrive
 
 try:
     from jinja2 import Template
@@ -98,6 +99,8 @@ class BirthdayMail:
 
         logging.info("----Starting the application----")
         self.logging = logging
+        self.gdrive = GDrive()
+        self.download()
 
         self.template_filename = None
         self.template_to_render = None
@@ -106,7 +109,7 @@ class BirthdayMail:
         self.password: str = os.environ.get("shazPassword")  # type: ignore
         user = os.environ.get("USER")
 
-        birthday.logging.info(
+        logging.info(
             f"--logged in as {user=}"
         )
 
@@ -360,6 +363,16 @@ class BirthdayMail:
         message["To"] = self.sender_email
         message.set_content(body)
         send_mail(self.sender_email, self.password, message)
+
+    def download(self):
+        logging.info("Downloading files")
+        self.gdrive.download()
+        logging.info("Downloaded files")
+
+    def upload(self):
+        logging.info("Uploading files")
+        self.gdrive.upload()
+        logging.info("Uploaded files")
 
 
 if __name__ == "__main__":
