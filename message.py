@@ -248,7 +248,7 @@ class BirthdayMail:
             logging.info(
                 f"script for {current_date_withyear} has already been executed"
             )
-            return
+            exit(1)
         current_time = current_date_time.strftime(self.formatString)
         self.bday: dict = json.load(open(self.data_path))
 
@@ -256,7 +256,7 @@ class BirthdayMail:
 
         if not prev_success:
             logging.info("---Sending Backlog email failed---")
-            return
+            exit(1)
 
         match: bool = False
         success: bool = False
