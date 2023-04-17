@@ -292,6 +292,8 @@ class BirthdayMail:
         return current_date_time, current_date_withyear
 
     def sort_date_dones_files(self) -> None:
+        # remove duplicates
+        self.dates_done = list(set(self.dates_done))
         self.dates_done.sort(
             key=lambda x: datetime.strptime(x, self.formatStringWithYear)
         )
