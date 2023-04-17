@@ -1,4 +1,5 @@
 import os
+import logging
 try:
     from pydrive.auth import GoogleAuth
     from pydrive.drive import GoogleDrive
@@ -13,10 +14,18 @@ except ImportError:
 CRED_FILE = os.path.join(os.path.dirname(__file__), "credentials.json")
 FILE_PATH = os.path.join(os.path.dirname(__file__), "..", 'dates.json')
 CLIENT_SECRET = os.path.join(os.path.dirname(__file__), "client_secrets.json")
+logger_path = os.path.join(os.path.dirname(__file__), "..",  "logger.log")
 
+logging.basicConfig(
+    filename=logger_path,
+    filemode="a",
+    level=logging.INFO,
+    format="%(asctime)s %(message)s",
+    datefmt="%m/%d/%Y %I:%M:%S %p",
+)
 
 class GDrive:
-    def __init__(self):
+    def  intiate(self):
         self.gauth = GoogleAuth()
         self.gauth.settings['client_config_file'] = CLIENT_SECRET
         if os.path.exists(CRED_FILE):
@@ -43,15 +52,30 @@ class GDrive:
             self.file = self.file_list[0]
 
     def upload(self):
+        if os.path.exists(FILE_PATH):
+            local_file_modified_time = os.path.getmtime(FILE_PATH)
+            remote_file_modified_time = self.file['modifiedDate']
+            logging.info(f"Local file modified time: {local_file_modified_time} during upload process.Remote file modified time: {remote_file_modified_time} during upload process.")
+            if local_file_modified_time < remote_file_modified_time:
+                logging.info(f"File '{self.file_title}' is up to date on Google Drive.")
+                return
         self.file.SetContentFile(FILE_PATH)
         self.file.Upload()
 
-        print(f"File '{self.file_title}' uploaded to Google Drive.")
+        logging.info(f"File '{self.file_title}' uploaded to Google Drive.")
 
     def download(self):
+        self.intiate()
+        if os.path.exists(FILE_PATH):
+            local_file_modified_time = os.path.getmtime(FILE_PATH)
+            remote_file_modified_time = self.file['modifiedDate']
+            logging.info(f"Local file modified time: {local_file_modified_time} during download process.Remote file modified time: {remote_file_modified_time} during download process.")
+            if local_file_modified_time > remote_file_modified_time:
+                logging.info(f"File '{self.file_title}' is up to date on local.")
+                return
         self.file.GetContentFile(FILE_PATH)
 
         while os.path.exists(FILE_PATH):
             break
 
-        print(f"File '{self.file_title}' downloaded from Google Drive.")
+        logging.info(f"File '{self.file_title}' downloaded from Google Drive.")
