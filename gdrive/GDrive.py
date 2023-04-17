@@ -45,14 +45,6 @@ class GDrive:
 
         self.drive = GoogleDrive(self.gauth)
 
-        self.file_title = 'dates.json'
-
-        self.file_list = self.drive.ListFile(
-            {'q': f"title='{self.file_title}' and trashed=false"}).GetList()
-        if len(self.file_list) == 0:
-            self.file = self.drive.CreateFile({'title': self.file_title})
-        else:
-            self.file = self.file_list[0]
 
     def upload(self):
         if os.path.exists(FILE_PATH):
@@ -76,6 +68,15 @@ class GDrive:
 
     def download(self):
         self.intiate()
+        self.file_title = 'dates.json'
+
+        self.file_list = self.drive.ListFile(
+            {'q': f"title='{self.file_title}' and trashed=false"}).GetList()
+        if len(self.file_list) == 0:
+            self.file = self.drive.CreateFile({'title': self.file_title})
+        else:
+            self.file = self.file_list[0]
+
         if os.path.exists(FILE_PATH):
             local_file_modified_time = os.path.getmtime(FILE_PATH)
         
@@ -90,3 +91,9 @@ class GDrive:
 
         logging.info(f"File '{self.file_title}' downloaded from Google Drive.")
         return True
+    
+    def download_by_id_and_file_format(self, file_path, file_id,mimetype ):
+        self.intiate()
+        file = self.drive.CreateFile({'id': file_id})
+        file.GetContentFile(file_path, mimetype=mimetype)
+        logging.info(f"File '{file_path}' downloaded from Google Drive.")

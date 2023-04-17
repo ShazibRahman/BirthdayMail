@@ -1,6 +1,8 @@
 import json
 import csv
-
+import os
+from sort_birthdays_json import main
+from gdrive.GDrive import GDrive
 
 def csv_json(csv_path: str, json_path: str) -> None:
     data: list = json.load(
@@ -10,15 +12,20 @@ def csv_json(csv_path: str, json_path: str) -> None:
     with open(csv_path, encoding="utf-8") as csvFile:
         csvReader = csv.DictReader(csvFile)
         for rows in csvReader:
-            if rows["Username"] in names:
-                print(rows["Username"], "already in the list")
+            if rows["Email Address"] in names:
+                print(rows["Email Address"], "already in the list")
             else:
-                info = {"mail": rows["Username"], "name": rows["name"]}
-                date_data = rows["birth date"].split("-")
-                info["date"] = date_data[1] + "-" + date_data[0]
+                info = {"mail": rows["Email Address"], "name": rows["name"]}
+                date_data = rows["birth date"].split("/")
+                month,day = date_data[0], date_data[1]
+                if len(month) == 1:
+                    month = "0" + month
+                if len(day) == 1:
+                    day = "0" + day
+                info["date"] = day + "-" + month
                 data.append(info)
-        with open(json_path, "w", encoding="utf-8") as jsonf:
-            json.dump(data, jsonf, indent=4)
+                print(rows["Email Address"], "added to the list")
+    main(data)
 
 
 def get_email(data) -> set:
@@ -29,7 +36,15 @@ def get_email(data) -> set:
 
 
 if __name__ == "__main__":
+    gdrive =  GDrive()
+    mimetype  = "text/csv"
+    file_id = "1IGVrFmTQq-lePEaKWQxEzIAmYy8UwyXgQU0xqyQ3hzc"
+    file_path = os.path.join(os.path.dirname(__file__), "Little Info (Responses).csv")
+    gdrive.download_by_id_and_file_format(file_path, file_id, mimetype)
+ 
+
     csv_json(
-        "/home/shazib/Little Info.csv",
-        "/home/shazib/Desktop/Folder/python/BirthdayMessage/data.json",
+        file_path,
+        os.path.join(os.path.dirname(__file__), "data.json")
     )
+

@@ -8,6 +8,7 @@ def sortBirthdaysObjectOnKey(birthdays: list, key: str) -> list:
     """
     sort birthdays object on key (date)
     """
+    console.log("Sorting birthdays")
     return sorted(
         birthdays, key=lambda x: x[key].split(
             "-")[1] + "-" + x[key].split("-")[0]
@@ -26,12 +27,11 @@ def writeJsonFile(fileName: str, data: list, indent: int = 4) -> None:
         json.dump(data, f, indent=indent)
 
 
-def main() -> None:
+def main(data) -> None:
     dir = os.path.dirname(__file__)
-    data_path = os.path.join(dir, 'data.json')
-    birthdays_unsorted = readJsonFile(data_path)
-    birthdays_sorted = sortBirthdaysObjectOnKey(birthdays_unsorted, "date")
-    if birthdays_sorted == birthdays_unsorted:
+    data_path = os.path.join(dir, "data.json")
+    birthdays_sorted = sortBirthdaysObjectOnKey(data, "date")
+    if birthdays_sorted == data:
         console.log("Birthdays are already sorted")
         return
     writeJsonFile(data_path, birthdays_sorted)
