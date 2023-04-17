@@ -248,7 +248,10 @@ class BirthdayMail:
             )
             exit(1)
         self.gdrive = GDrive()
-        self.download()
+        if self.download():
+            self.dates_done = json.load(
+                open(os.path.join(self.directoryString, "dates.json"))
+            )
         current_time = current_date_time.strftime(self.formatString)
         self.bday: dict = json.load(open(self.data_path))
 
@@ -365,14 +368,10 @@ class BirthdayMail:
         send_mail(self.sender_email, self.password, message)
 
     def download(self):
-        logging.info("Downloading files")
-        self.gdrive.download()
-        logging.info("Downloaded files")
+        return self.gdrive.download()
 
     def upload(self):
-        logging.info("Uploading files")
-        self.gdrive.upload()
-        logging.info("Uploaded files")
+        return self.gdrive.upload()
 
 
 if __name__ == "__main__":

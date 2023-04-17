@@ -1,5 +1,6 @@
 import os
 import logging
+from datetime import datetime
 try:
     from pydrive.auth import GoogleAuth
     from pydrive.drive import GoogleDrive
@@ -54,10 +55,11 @@ class GDrive:
     def upload(self):
         if os.path.exists(FILE_PATH):
             local_file_modified_time = os.path.getmtime(FILE_PATH)
-            remote_file_modified_time = self.file['modifiedDate']
+            remote_file_mod_time_str = self.file['modifiedDate']
+            remote_file_modified_time = datetime.fromisoformat(remote_file_mod_time_str[:-1]).timestamp()
             logging.info(f"Local file modified time: {local_file_modified_time} during upload process.Remote file modified time: {remote_file_modified_time} during upload process.")
-            if local_file_modified_time < remote_file_modified_time:
-                logging.info(f"File '{self.file_title}' is up to date on Google Drive.")
+            if local_file_modified_time <= remote_file_modified_time:
+                logging.info(f"File '{self.file_title}' is up to date on Google Drive. skipping upload.")
                 return
         self.file.SetContentFile(FILE_PATH)
         self.file.Upload()
@@ -68,14 +70,16 @@ class GDrive:
         self.intiate()
         if os.path.exists(FILE_PATH):
             local_file_modified_time = os.path.getmtime(FILE_PATH)
-            remote_file_modified_time = self.file['modifiedDate']
+            remote_file_mod_time_str = self.file['modifiedDate']
+            remote_file_modified_time = datetime.fromisoformat(remote_file_mod_time_str[:-1]).timestamp()
             logging.info(f"Local file modified time: {local_file_modified_time} during download process.Remote file modified time: {remote_file_modified_time} during download process.")
-            if local_file_modified_time > remote_file_modified_time:
-                logging.info(f"File '{self.file_title}' is up to date on local.")
-                return
+            if local_file_modified_time >= remote_file_modified_time:
+                logging.info(f"File '{self.file_title}' is up to date on local. skipping download.")
+                return False
         self.file.GetContentFile(FILE_PATH)
 
         while os.path.exists(FILE_PATH):
             break
 
         logging.info(f"File '{self.file_title}' downloaded from Google Drive.")
+        return True
