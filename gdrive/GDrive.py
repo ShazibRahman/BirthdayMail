@@ -1,6 +1,7 @@
 import os
 import logging
 from datetime import datetime
+import pytz
 try:
     from pydrive.auth import GoogleAuth
     from pydrive.drive import GoogleDrive
@@ -15,6 +16,7 @@ except ImportError:
 CRED_FILE = os.path.join(os.path.dirname(__file__), "credentials.json")
 FILE_PATH = os.path.join(os.path.dirname(__file__), "..", 'dates.json')
 CLIENT_SECRET = os.path.join(os.path.dirname(__file__), "client_secrets.json")
+LOCAL_DATE_TIMEZONE = pytz.timezone("Asia/Kolkata")
 logger_path = os.path.join(os.path.dirname(__file__), "..",  "logger.log")
 
 logging.basicConfig(
@@ -55,26 +57,30 @@ class GDrive:
     def upload(self):
         if os.path.exists(FILE_PATH):
             local_file_modified_time = os.path.getmtime(FILE_PATH)
-            remote_file_mod_time_str = self.file['modifiedDate']
-            remote_file_modified_time = datetime.strptime(remote_file_mod_time_str, '%Y-%m-%dT%H:%M:%S.%fZ').timestamp()
-            logging.info(f"Local file modified time: {local_file_modified_time} during upload process. Remote file modified time: {remote_file_modified_time} during upload process.")
-            if local_file_modified_time <= remote_file_modified_time:
+            logging.info(f"Local file modified time: {local_file_modified_time} during upload process. Remote file modified time: {self.get_remote_modified_timestamp()} during upload process.")
+            if local_file_modified_time <= self.get_remote_modified_timestamp():
                 logging.info(f"File '{self.file_title}' is up to date on Google Drive. skipping upload.")
                 return
         self.file.SetContentFile(FILE_PATH)
         self.file.Upload()
 
         logging.info(f"File '{self.file_title}' uploaded to Google Drive.")
-        logging.info(f"Modified time of file on google drive after upload: { datetime.fromisoformat(self.file['modifiedDate'][:-1]).timestamp()} ")
+        remote_file_modified_time = self.get_remote_modified_timestamp()
+        logging.info(f"Modified time of file on google drive after upload: {remote_file_modified_time} ")
+
+    def get_remote_modified_timestamp(self):
+        remote_file_modified_time = datetime.strptime(self.file['modifiedDate'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        remote_file_modified_time = remote_file_modified_time.replace(tzinfo=pytz.utc)
+        remote_file_modified_time = remote_file_modified_time.astimezone(LOCAL_DATE_TIMEZONE)
+        return remote_file_modified_time.timestamp()
 
     def download(self):
         self.intiate()
         if os.path.exists(FILE_PATH):
             local_file_modified_time = os.path.getmtime(FILE_PATH)
-            remote_file_mod_time_str = self.file['modifiedDate']
-            remote_file_modified_time = datetime.strptime(remote_file_mod_time_str, '%Y-%m-%dT%H:%M:%S.%fZ').timestamp()
-            logging.info(f"Local file modified time: {local_file_modified_time} during download process. Remote file modified time: {remote_file_modified_time} during download process.")
-            if local_file_modified_time >= remote_file_modified_time:
+        
+            logging.info(f"Local file modified time: {local_file_modified_time} during download process. Remote file modified time: {self.get_remote_modified_timestamp()} during download process.")
+            if local_file_modified_time >= self.get_remote_modified_timestamp():
                 logging.info(f"File '{self.file_title}' is up to date on local. skipping download.")
                 return False
         self.file.GetContentFile(FILE_PATH)
