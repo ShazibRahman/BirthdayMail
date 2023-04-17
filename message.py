@@ -252,6 +252,12 @@ class BirthdayMail:
             self.dates_done = json.load(
                 open(os.path.join(self.directoryString, "dates.json"))
             )
+            current_date_time, current_date_withyear = self.get_current_date()
+            if current_date_withyear in self.dates_done:
+                logging.info(
+                    f"script for {current_date_withyear} has already been executed"
+                )
+                exit(1)
         current_time = current_date_time.strftime(self.formatString)
         self.bday: dict = json.load(open(self.data_path))
 
