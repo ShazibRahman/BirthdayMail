@@ -57,7 +57,7 @@ class GDrive:
             local_file_modified_time = os.path.getmtime(FILE_PATH)
             remote_file_mod_time_str = self.file['modifiedDate']
             remote_file_modified_time = datetime.strptime(remote_file_mod_time_str, '%Y-%m-%dT%H:%M:%S.%fZ').timestamp()
-            logging.info(f"Local file modified time: {local_file_modified_time} during upload process.Remote file modified time: {remote_file_modified_time} during upload process.")
+            logging.info(f"Local file modified time: {local_file_modified_time} during upload process. Remote file modified time: {remote_file_modified_time} during upload process.")
             if local_file_modified_time <= remote_file_modified_time:
                 logging.info(f"File '{self.file_title}' is up to date on Google Drive. skipping upload.")
                 return
@@ -73,7 +73,7 @@ class GDrive:
             local_file_modified_time = os.path.getmtime(FILE_PATH)
             remote_file_mod_time_str = self.file['modifiedDate']
             remote_file_modified_time = datetime.strptime(remote_file_mod_time_str, '%Y-%m-%dT%H:%M:%S.%fZ').timestamp()
-            logging.info(f"Local file modified time: {local_file_modified_time} during download process.Remote file modified time: {remote_file_modified_time} during download process.")
+            logging.info(f"Local file modified time: {local_file_modified_time} during download process. Remote file modified time: {remote_file_modified_time} during download process.")
             if local_file_modified_time >= remote_file_modified_time:
                 logging.info(f"File '{self.file_title}' is up to date on local. skipping download.")
                 return False
