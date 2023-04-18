@@ -53,9 +53,9 @@ class GDrive:
         self.drive = GoogleDrive(self.gauth)
 
     def upload(self, file_path=FILE_PATH):
-        if os.path.exists(file_path) and len(self.file_list)>0:
+        if os.path.exists(file_path) and len(self.file_list) > 0:
             local_file_modified_time = os.path.getmtime(file_path)
-        
+
             if local_file_modified_time <= self.get_remote_modified_timestamp():
                 logging.info(
                     f"File '{self.file_title}' is up to date on Google Drive. skipping upload.")
@@ -65,9 +65,10 @@ class GDrive:
 
         self.file.SetContentFile(file_path)
         self.file.Upload()
-        
-        logging.info(f"File '{self.file_title}' uploaded to Google Drive.")
-            
+
+        logging.info(
+            f"File '{self.file_title} and {file_path}' uploaded to Google Drive.")
+
     def get_remote_modified_timestamp(self):
         remote_file_modified_time = datetime.strptime(
             self.file['modifiedDate'], '%Y-%m-%dT%H:%M:%S.%fZ')
@@ -84,16 +85,21 @@ class GDrive:
         self.file_list = self.drive.ListFile(
             {'q': f"title='{self.file_title}' and trashed=false"}).GetList()
         if len(self.file_list) == 0:
-            return True
+            self.file = self.drive.CreateFile(
+                {'title': self.file_title})
         else:
             self.file = self.file_list[0]
 
         if os.path.exists(FILE_PATH):
-            local_file_modified_time = os.path.getmtime(FILE_PATH) + 10 #
-        
+            local_file_modified_time = os.path.getmtime(FILE_PATH) + 10
+        try:
             if local_file_modified_time >= self.get_remote_modified_timestamp():
-                logging.info(f"File '{self.file_title}' is up to date on local. skipping download.")
+                logging.info(
+                    f"File '{self.file_title}' is up to date on local. skipping download.")
                 return False
+        except:
+            logging.info(f"File '{self.file_title}' is not present on remote.")
+            return False
         self.file.GetContentFile(file_path)
 
         while os.path.exists(file_path):
@@ -112,4 +118,4 @@ class GDrive:
         self.download(DATA_PATH)
 
     def upload_data_file(self):
-        self.upload(DATA_PATH)
+        self.upload(file_path=DATA_PATH)
