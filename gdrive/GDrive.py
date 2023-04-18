@@ -1,6 +1,6 @@
 import os
 import logging
-from datetime import datetime , timedelta
+from datetime import datetime 
 import pytz
 try:
     from pydrive.auth import GoogleAuth
@@ -84,7 +84,7 @@ class GDrive:
             local_file_modified_time = os.path.getmtime(FILE_PATH)
         
             logging.info(f"Local file modified time: {local_file_modified_time} during download process. Remote file modified time: {self.get_remote_modified_timestamp()} during download process.")
-            if local_file_modified_time + timedelta(milliseconds=10)  >= self.get_remote_modified_timestamp():
+            if local_file_modified_time >= self.get_remote_modified_timestamp():
                 logging.info(f"File '{self.file_title}' is up to date on local. skipping download.")
                 return False
         self.file.GetContentFile(FILE_PATH)
