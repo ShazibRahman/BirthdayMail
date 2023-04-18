@@ -1,6 +1,6 @@
 import os
 import logging
-from datetime import datetime
+from datetime import datetime , timedelta
 import pytz
 try:
     from pydrive.auth import GoogleAuth
@@ -14,10 +14,13 @@ except ImportError:
     from pydrive.drive import GoogleDrive
 
 CRED_FILE = os.path.join(os.path.dirname(__file__), "credentials.json")
-FILE_PATH = os.path.join(os.path.dirname(__file__), "..", 'dates.json')
+FILE_PATH = os.path.join(os.path.dirname(__file__), "..","data", 'dates.json')
 CLIENT_SECRET = os.path.join(os.path.dirname(__file__), "client_secrets.json")
 LOCAL_DATE_TIMEZONE = pytz.timezone("Asia/Kolkata")
-logger_path = os.path.join(os.path.dirname(__file__), "..",  "logger.log")
+logger_path = os.path.join(os.path.dirname(__file__), "..","data" , "logger.log")
+
+if not os.path.exists(logger_path):
+    open(logger_path, "w").close()
 
 logging.basicConfig(
     filename=logger_path,
@@ -81,7 +84,7 @@ class GDrive:
             local_file_modified_time = os.path.getmtime(FILE_PATH)
         
             logging.info(f"Local file modified time: {local_file_modified_time} during download process. Remote file modified time: {self.get_remote_modified_timestamp()} during download process.")
-            if local_file_modified_time >= self.get_remote_modified_timestamp():
+            if local_file_modified_time + timedelta(milliseconds=10)  >= self.get_remote_modified_timestamp():
                 logging.info(f"File '{self.file_title}' is up to date on local. skipping download.")
                 return False
         self.file.GetContentFile(FILE_PATH)

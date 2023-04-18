@@ -21,7 +21,7 @@ except ImportError:
     from jinja2 import Template
 
 
-logger_path = os.path.join(os.path.dirname(__file__), "logger.log")
+logger_path = os.path.join(os.path.dirname(__file__), "data","logger.log")
 
 if not os.path.exists(logger_path):
     with open(logger_path, "w") as f:
@@ -114,9 +114,11 @@ class BirthdayMail:
         self.formatString = "%d-%m"
         self.formatStringWithYear = "%d-%m-%Y"
         self.format_late_mail_date = "%d-%b"
-        self.occasion_path = os.path.join(self.directoryString,
+        self.occasion_path = os.path.join(self.directoryString,"data",
                                           "occasions.json")
-        self.data_path = os.path.join(self.directoryString, "data.json")
+        self.data_path = os.path.join(self.directoryString,"data" ,"data.json")
+        self.dates_done_path = os.path.join(self.directoryString,"data",
+                                            "dates.json")
 
     def sendEmailOnSpecialOccasion(self, Occasion: dict):
         template_filename = os.path.join(
@@ -233,13 +235,12 @@ class BirthdayMail:
 
         if modified_dates_file:
             self.sort_date_dones_files()
-            saveJsontoFile(os.path.join(self.directoryString,
-                           "dates.json"), self.dates_done)
+            saveJsontoFile(self.dates_done_path, self.dates_done)
         return True
 
     def send_mail_from_json(self):
         self.dates_done: list[str] = json.load(
-            open(os.path.join(self.directoryString, "dates.json"))
+            open(self.dates_done_path)
         )
         current_date_time, current_date_withyear = self.get_current_date()
         if current_date_withyear in self.dates_done:
@@ -250,7 +251,7 @@ class BirthdayMail:
         self.gdrive = GDrive()
         if self.download():
             self.dates_done = json.load(
-                open(os.path.join(self.directoryString, "dates.json"))
+                open(self.dates_done_path)
             )
             current_date_time, current_date_withyear = self.get_current_date()
             if current_date_withyear in self.dates_done:
