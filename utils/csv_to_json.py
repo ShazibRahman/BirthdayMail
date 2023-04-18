@@ -1,11 +1,11 @@
-import os
 import csv
 import json
 import os 
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from sort_birthdays_json import main 
-from gdrive.GDrive import GDrive 
+from utils.sort_birthdays_json import main  as sort_json
+if __name__ == "__main__":
+    from gdrive.GDrive import GDrive 
 
 
 def csv_json(csv_path: str, json_path: str) -> None:
@@ -29,7 +29,7 @@ def csv_json(csv_path: str, json_path: str) -> None:
                 info["date"] = day + "-" + month
                 data.append(info)
                 print(rows["Email Address"], "added to the list")
-    main(data)
+    sort_json(data)
 
 
 def get_email(data) -> set:
@@ -37,6 +37,19 @@ def get_email(data) -> set:
     for i in data:
         names.add(i["mail"])
     return names
+
+def main(gdrive):
+    print(type(gdrive))
+    mimetype = "text/csv"
+    file_id = "1IGVrFmTQq-lePEaKWQxEzIAmYy8UwyXgQU0xqyQ3hzc"
+    file_path = os.path.join(os.path.dirname(
+        __file__), "Little Info (Responses).csv")
+    gdrive.download_by_id_and_file_format(file_path, file_id, mimetype)
+
+    csv_json(
+        file_path,
+        os.path.join(os.path.dirname(__file__), "..","data", "data.json")
+    )
 
 
 if __name__ == "__main__":

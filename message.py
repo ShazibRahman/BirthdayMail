@@ -9,6 +9,7 @@ from typing import Tuple
 from email.message import EmailMessage
 from datetime import datetime, timedelta
 from gdrive.GDrive import GDrive
+from utils.csv_to_json import main as csv_to_json
 
 try:
     from jinja2 import Template
@@ -21,7 +22,7 @@ except ImportError:
     from jinja2 import Template
 
 
-logger_path = os.path.join(os.path.dirname(__file__), "data","logger.log")
+logger_path = os.path.join(os.path.dirname(__file__), "data", "logger.log")
 
 if not os.path.exists(logger_path):
     with open(logger_path, "w") as f:
@@ -114,10 +115,11 @@ class BirthdayMail:
         self.formatString = "%d-%m"
         self.formatStringWithYear = "%d-%m-%Y"
         self.format_late_mail_date = "%d-%b"
-        self.occasion_path = os.path.join(self.directoryString,"data",
+        self.occasion_path = os.path.join(self.directoryString, "data",
                                           "occasions.json")
-        self.data_path = os.path.join(self.directoryString,"data" ,"data.json")
-        self.dates_done_path = os.path.join(self.directoryString,"data",
+        self.data_path = os.path.join(
+            self.directoryString, "data", "data.json")
+        self.dates_done_path = os.path.join(self.directoryString, "data",
                                             "dates.json")
 
     def sendEmailOnSpecialOccasion(self, Occasion: dict):
@@ -380,6 +382,11 @@ class BirthdayMail:
 
     def upload(self):
         return self.gdrive.upload()
+
+    def download_read_csv_from_server_then_upload(self):
+        self.gdrive.download_data_file()
+        csv_to_json(self.gdrive)
+        self.gdrive.upload_data_file()
 
 
 if __name__ == "__main__":
