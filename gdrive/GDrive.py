@@ -1,4 +1,5 @@
 import os
+import pathlib
 import logging
 from datetime import datetime
 import pytz
@@ -13,14 +14,22 @@ except ImportError:
     from pydrive.auth import GoogleAuth
     from pydrive.drive import GoogleDrive
 
-CRED_FILE = os.path.join(os.path.dirname(__file__), "credentials.json")
-FILE_PATH = os.path.join(os.path.dirname(__file__), "..", "data", 'dates.json')
-CLIENT_SECRET = os.path.join(os.path.dirname(__file__), "client_secrets.json")
-LOCAL_DATE_TIMEZONE = pytz.timezone("Asia/Kolkata")
-DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "data.json")
+CRED_FILE = pathlib.Path(__file__).parent.joinpath(
+    "credentials.json").resolve()
 
-logger_path = os.path.join(os.path.dirname(
-    __file__), "..", "data", "logger.log")
+FILE_PATH = pathlib.Path(__file__).parent.parent.joinpath(
+    "data", "data.json").resolve()
+
+CLIENT_SECRET = pathlib.Path(__file__).parent.joinpath(
+    "client_secrets.json").resolve()
+
+LOCAL_DATE_TIMEZONE = pytz.timezone("Asia/Kolkata")
+
+DATA_PATH = pathlib.Path(__file__).parent.parent.joinpath(
+    "data", "data.json").resolve()
+
+logger_path = pathlib.Path(__file__).parent.parent.joinpath(
+    "data", "logger.log").resolve()
 
 if not os.path.exists(logger_path):
     open(logger_path, "w").close()
@@ -109,7 +118,8 @@ class GDrive:
         while os.path.exists(file_path):
             break
 
-        logging.info(f"File '{self.file_title}' downloaded from Google Drive.")
+        logging.info(
+            f"File '{self.file_title}' downloaded to {file_path} from Google Drive.")
         return True
 
     def download_by_id_and_file_format(self, file_path, file_id, mimetype):
@@ -123,3 +133,8 @@ class GDrive:
 
     def upload_data_file(self):
         self.upload(file_path=DATA_PATH)
+
+
+if __name__ == "__main__":
+    print(f"{DATA_PATH=} {logger_path=} {CRED_FILE=} {FILE_PATH=} {CLIENT_SECRET=}")
+    GDrive().download_data_file()

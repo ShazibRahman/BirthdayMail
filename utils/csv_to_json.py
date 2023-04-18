@@ -1,9 +1,8 @@
 import csv
 import json
-import os
 import sys
 import pathlib
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(pathlib.Path(__file__).parent.parent.resolve())
 
 
 if __name__ == "__main__":
@@ -48,13 +47,14 @@ def main(gdrive):
     print(type(gdrive))
     mimetype = "text/csv"
     file_id = "1IGVrFmTQq-lePEaKWQxEzIAmYy8UwyXgQU0xqyQ3hzc"
-    file_path = os.path.join(os.path.dirname(
-        __file__), "Little Info (Responses).csv")
+    file_path = pathlib.Path(__file__).parent.joinpath(
+        "Little Info (Responses).csv").resolve()
     gdrive.download_by_id_and_file_format(file_path, file_id, mimetype)
 
     csv_json(
         file_path,
-        os.path.join(os.path.dirname(__file__), "..", "data", "data.json")
+        pathlib.Path(__file__).parent.parent.joinpath(
+            "data", "data.json").resolve()
     )
 
 
@@ -63,12 +63,13 @@ if __name__ == "__main__":
     mimetype = "text/csv"
     gdrive.download_data_file()
     file_id = "1IGVrFmTQq-lePEaKWQxEzIAmYy8UwyXgQU0xqyQ3hzc"
-    file_path = os.path.join(os.path.dirname(
-        __file__), "Little Info (Responses).csv")
+    file_path = pathlib.Path(__file__).parent.joinpath(
+        "Little Info (Responses).csv").resolve()
     gdrive.download_by_id_and_file_format(file_path, file_id, mimetype)
 
     csv_json(
         file_path,
-        os.path.join(os.path.dirname(__file__), "..", "data", "data.json")
+        pathlib.Path(__file__).parent.parent.joinpath(
+            "data", "data.json").resolve()
     )
     gdrive.upload_data_file()
