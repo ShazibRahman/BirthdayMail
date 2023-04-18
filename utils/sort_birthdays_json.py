@@ -1,7 +1,11 @@
 import json
 import os
+import pathlib
 from rich.console import Console
 console = Console()
+
+data_path = pathlib.Path(
+    __file__).parent.parent.joinpath("data", "data.json")
 
 
 def sortBirthdaysObjectOnKey(birthdays: list, key: str) -> list:
@@ -28,8 +32,7 @@ def writeJsonFile(fileName: str, data: list, indent: int = 4) -> None:
 
 
 def main(data) -> None:
-    dir = os.path.dirname(__file__)
-    data_path = os.path.join(dir,"..","data" ,"data.json")
+    print(data_path)
     birthdays_sorted = sortBirthdaysObjectOnKey(data, "date")
     if birthdays_sorted == data:
         console.log("Birthdays are already sorted")
@@ -38,4 +41,5 @@ def main(data) -> None:
 
 
 if __name__ == "__main__":
-    main()
+    data = readJsonFile(data_path)
+    main(data)
