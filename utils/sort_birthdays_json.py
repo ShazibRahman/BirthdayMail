@@ -29,7 +29,7 @@ def writeJsonFile(fileName: str, data: list, indent: int = 4) -> None:
 
 def main(data) -> None:
     dir = os.path.dirname(__file__)
-    data_path = os.path.join(dir,"..", "data.json")
+    data_path = os.path.join(dir,"..","data" ,"data.json")
     birthdays_sorted = sortBirthdaysObjectOnKey(data, "date")
     if birthdays_sorted == data:
         console.log("Birthdays are already sorted")
