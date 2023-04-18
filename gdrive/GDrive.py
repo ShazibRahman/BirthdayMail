@@ -81,7 +81,7 @@ class GDrive:
             self.file = self.file_list[0]
 
         if os.path.exists(FILE_PATH):
-            local_file_modified_time = os.path.getmtime(FILE_PATH)
+            local_file_modified_time = os.path.getmtime(FILE_PATH) + 10 #
         
             logging.info(f"Local file modified time: {local_file_modified_time} during download process. Remote file modified time: {self.get_remote_modified_timestamp()} during download process.")
             if local_file_modified_time >= self.get_remote_modified_timestamp():

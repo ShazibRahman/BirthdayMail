@@ -288,8 +288,7 @@ class BirthdayMail:
 
         if modified_dates_done_file:
             self.sort_date_dones_files()
-            saveJsontoFile(os.path.join(self.directoryString,
-                           "dates.json"), self.dates_done)
+            saveJsontoFile(self.dates_done_path, self.dates_done)
 
     def get_current_date(self) -> Tuple[datetime, str]:
         current_date_time = datetime.now()
