@@ -2,8 +2,8 @@ import argparse
 import os
 from message import BirthdayMail
 
-loggerPath = os.path.join(os.path.dirname(__file__), "logger.log")
-anacron_user = "Shazib_Anacron"
+loggerPath = os.path.join(os.path.dirname(__file__),"data", "logger.log")
+
 
 
 def readLogs():
