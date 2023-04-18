@@ -90,8 +90,11 @@ class GDrive:
         else:
             self.file = self.file_list[0]
 
-        if os.path.exists(FILE_PATH):
+        if os.path.exists(file_path):
             local_file_modified_time = os.path.getmtime(FILE_PATH) + 10
+        else:
+            local_file_modified_time = 0
+            
         try:
             if local_file_modified_time >= self.get_remote_modified_timestamp():
                 logging.info(

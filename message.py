@@ -262,6 +262,7 @@ class BirthdayMail:
                 )
                 exit(1)
         current_time = current_date_time.strftime(self.formatString)
+        self.download_read_csv_from_server_then_upload()
         self.bday: dict = json.load(open(self.data_path))
 
         prev_success = self.check_for_pending_and_send_message()

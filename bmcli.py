@@ -32,7 +32,6 @@ def cliMethod():
         birthday.send_mail_from_json()
         birthday.send_email_special_occassions()
         birthday.upload()
-        birthday.download_read_csv_from_server_then_upload()
 
         return
 
