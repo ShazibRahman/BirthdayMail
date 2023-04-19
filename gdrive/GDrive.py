@@ -44,7 +44,7 @@ logging.basicConfig(
 
 
 class GDrive:
-    def intiate(self):
+    def __init__(self):
         self.gauth = GoogleAuth()
         self.gauth.settings['client_config_file'] = CLIENT_SECRET
         if os.path.exists(CRED_FILE):
@@ -102,7 +102,6 @@ class GDrive:
         return remote_file_modified_time.timestamp()
 
     def download(self, file_path=FILE_PATH):
-        self.intiate()
         self.file_title = os.path.basename(file_path)
 
         self.file_list = self.drive.ListFile(
@@ -136,7 +135,6 @@ class GDrive:
         return True
 
     def download_by_id_and_file_format(self, file_path, file_id, mimetype):
-        self.intiate()
         file = self.drive.CreateFile({'id': file_id})
         file.GetContentFile(file_path, mimetype=mimetype)
         logging.info(f"File '{file_path}' downloaded from Google Drive.")
