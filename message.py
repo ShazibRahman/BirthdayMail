@@ -255,7 +255,6 @@ class BirthdayMail:
             self.dates_done = json.load(
                 open(self.dates_done_path)
             )
-            current_date_time, current_date_withyear = self.get_current_date()
             if current_date_withyear in self.dates_done:
                 logging.info(
                     f"script for {current_date_withyear} has already been executed"
