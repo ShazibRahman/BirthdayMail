@@ -18,7 +18,7 @@ CRED_FILE = pathlib.Path(__file__).parent.joinpath(
     "credentials.json").resolve()
 
 FILE_PATH = pathlib.Path(__file__).parent.parent.joinpath(
-    "data", "data.json").resolve()
+    "data", "dates.json").resolve()
 
 CLIENT_SECRET = pathlib.Path(__file__).parent.joinpath(
     "client_secrets.json").resolve()
@@ -62,6 +62,7 @@ class GDrive:
         self.drive = GoogleDrive(self.gauth)
 
     def upload(self, file_path=FILE_PATH):
+
         if os.path.exists(file_path) and len(self.file_list) > 0:
             # +10 microsecond to avoid the time difference between local and remote because of the upload time
             local_file_modified_time = os.path.getmtime(file_path) + 10
