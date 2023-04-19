@@ -122,21 +122,20 @@ class GDrive:
                 logging.info(
                     f"File '{self.file_title}' is up to date on local. skipping download.")
                 return False
-        except:
+        except Exception as e:
             logging.info(f"File '{self.file_title}' is not present on remote.")
+            print(e)
+
             return False
         self.file.GetContentFile(file_path)
-
-        while os.path.exists(file_path):
-            break
 
         logging.info(
             f"File '{self.file_title}' downloaded to {file_path} from Google Drive.")
         return True
 
     def download_by_id_and_file_format(self, file_path, file_id, mimetype):
-        file = self.drive.CreateFile({'id': file_id})
-        file.GetContentFile(file_path, mimetype=mimetype)
+        file_ = self.drive.CreateFile({'id': file_id})
+        file_.GetContentFile(file_path, mimetype=mimetype)
         logging.info(f"File '{file_path}' downloaded from Google Drive.")
 
     def download_data_file(self):

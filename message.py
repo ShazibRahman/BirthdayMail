@@ -25,8 +25,7 @@ except ImportError:
 logger_path = os.path.join(os.path.dirname(__file__), "data", "logger.log")
 
 if not os.path.exists(logger_path):
-    with open(logger_path, "w") as f:
-        pass
+    open(logger_path, "w").close()
 
 logging.basicConfig(
     filename=logger_path,
@@ -49,14 +48,14 @@ def render_template(template: Template, context: dict):
     return template.render(context)
 
 
-def saveJsontoFile(fileName: str, data: list, indent: int = 4) -> None:
-    with open(fileName, "w") as f:
+def save_jsonto_file(file_name: str, data: list, indent: int = 4) -> None:
+    with open(file_name, "w") as f:
         json.dump(data, f, indent=indent)
-    logging.info(f"write changes to {fileName=}")
+    logging.info(f"write changes to {file_name=}")
 
 
-def read_json_to_py_objecy(fileName: str):
-    with open(fileName) as f:
+def read_json_to_py_objecy(file_name: str):
+    with open(file_name) as f:
         return json.load(f)
 
 
@@ -71,11 +70,11 @@ def find_next_leap_year(year: int) -> int:
         return year
 
 
-def isLeapYear(year: int) -> bool:
+def is_leap_year(year: int) -> bool:
     return year % 4 == 0 and year % 100 != 0 or year % 400 == 0
 
 
-def isGreater(day1: int, month1: int, day2: int, month2: int) -> bool:
+def is_greater(day1: int, month1: int, day2: int, month2: int) -> bool:
     if month1 > month2:
         return True
     elif month1 == month2 and day1 > day2:
@@ -90,7 +89,7 @@ def send_mail(sender_email: str, password: str, message: EmailMessage):
             server.login(sender_email, password)
             server.send_message(message)
     except Exception as e:
-        logging.error("---Network Error---", str(e))
+        logging.error("---Network Error---"+str(e))
         return False
     return True
 
@@ -103,7 +102,7 @@ class BirthdayMail:
 
         self.template_filename = None
         self.template_to_render = None
-        self.directoryString = os.path.dirname(__file__)
+        self.directory_string = os.path.dirname(__file__)
         self.sender_email: str = os.environ.get("shazmail")  # type: ignore
         self.password: str = os.environ.get("shazPassword")  # type: ignore
         user = os.environ.get("USER")
@@ -112,31 +111,31 @@ class BirthdayMail:
             f"--logged in as {user=}"
         )
 
-        self.formatString = "%d-%m"
-        self.formatStringWithYear = "%d-%m-%Y"
+        self.format_string = "%d-%m"
+        self.format_string_with_year = "%d-%m-%Y"
         self.format_late_mail_date = "%d-%b"
-        self.occasion_path = os.path.join(self.directoryString, "data",
+        self.occasion_path = os.path.join(self.directory_string, "data",
                                           "occasions.json")
         self.data_path = os.path.join(
-            self.directoryString, "data", "data.json")
-        self.dates_done_path = os.path.join(self.directoryString, "data",
+            self.directory_string, "data", "data.json")
+        self.dates_done_path = os.path.join(self.directory_string, "data",
                                             "dates.json")
 
-    def sendEmailOnSpecialOccasion(self, Occasion: dict):
+    def send_email_on_special_occasion(self, occasion: dict):
         template_filename = os.path.join(
-            self.directoryString, "templates", Occasion["template"]
+            self.directory_string, "templates", occasion["template"]
         )
 
         self.template_to_render = Template(open(template_filename).read())
         context_template = render_template(self.template_to_render, {})
-        if len(Occasion["peopleToGreet"]) <= 0:
+        if len(occasion["peopleToGreet"]) <= 0:
             logging.info(
-                f"No Person is found in the occasions {Occasion['name']}")
+                f"No Person is found in the occasions {occasion['name']}")
 
-        for person in Occasion["peopleToGreet"]:
+        for person in occasion["peopleToGreet"]:
             message = EmailMessage()
             message["Subject"] = (
-                Occasion["subject"] + " " + person["name"].split("(")[0] + "!"
+                occasion["subject"] + " " + person["name"].split("(")[0] + "!"
             )
             message["From"] = self.sender_email
             message["To"] = person["mail"]
@@ -144,12 +143,12 @@ class BirthdayMail:
             message.set_content(context_template, subtype="html")
             if send_mail(self.sender_email, self.password, message):
                 logging.info(
-                    f"The email has been sent to {person['name']} with email {person['mail']} using template {Occasion['template']}"
+                    f"The email has been sent to {person['name']} with email {person['mail']} using template {occasion['template']}"
                 )
             else:
                 exit(1)
 
-            Occasion["peopleToGreet"].remove(person)
+            occasion["peopleToGreet"].remove(person)
 
     def message_func(self, val: dict, pending_mail=False) -> bool:
         receiver_email = val["mail"]
@@ -160,14 +159,14 @@ class BirthdayMail:
         message["To"] = receiver_email
 
         if pending_mail:
-            templaneName = "late.html"
+            template_name = "late.html"
         else:
-            templateList = ["template_3.html",
-                            "template_2.html",
-                            "template_1.html"]
-            templaneName = random.choice(templateList)
+            template_list = ["template_3.html",
+                             "template_2.html",
+                             "template_1.html"]
+            template_name = random.choice(template_list)
         self.template_filename = os.path.join(
-            self.directoryString, "templates", templaneName)
+            self.directory_string, "templates", template_name)
         self.template_to_render = Template(open(self.template_filename).read())
         context_template = render_template(
             self.template_to_render, {"name": name})
@@ -185,14 +184,14 @@ class BirthdayMail:
         self.sort_date_dones_files()
 
         last_run_datetime = datetime.strptime(
-            self.dates_done[-1], self.formatStringWithYear
+            self.dates_done[-1], self.format_string_with_year
         )
 
         modified_dates_file = False
 
         current_datetime = datetime.strptime(
-            current_datetime.strftime(self.formatStringWithYear),
-            self.formatStringWithYear,
+            current_datetime.strftime(self.format_string_with_year),
+            self.format_string_with_year,
         )  # to make datetime format same as the one last_run_date
 
         if last_run_datetime == current_datetime - timedelta(1):
@@ -206,7 +205,7 @@ class BirthdayMail:
                 last_run_string = last_run.strftime(self.formatString)
                 last_run_set.add(last_run_string)
                 last_run_with_year_set.add(
-                    last_run.strftime(self.formatStringWithYear)
+                    last_run.strftime(self.format_string_with_year)
                 )
                 last_run = last_run + timedelta(1)
 
@@ -237,7 +236,7 @@ class BirthdayMail:
 
         if modified_dates_file:
             self.sort_date_dones_files()
-            saveJsontoFile(self.dates_done_path, self.dates_done)
+            save_jsonto_file(self.dates_done_path, self.dates_done)
         return True
 
     def send_mail_from_json(self):
@@ -290,12 +289,12 @@ class BirthdayMail:
 
         if modified_dates_done_file:
             self.sort_date_dones_files()
-            saveJsontoFile(self.dates_done_path, self.dates_done)
+            save_jsonto_file(self.dates_done_path, self.dates_done)
 
     def get_current_date(self) -> Tuple[datetime, str]:
         current_date_time = datetime.now()
         current_date_withyear = current_date_time.strftime(
-            self.formatStringWithYear)
+            self.format_string_with_year)
 
         return current_date_time, current_date_withyear
 
@@ -303,7 +302,7 @@ class BirthdayMail:
         # remove duplicates
         self.dates_done = list(set(self.dates_done))
         self.dates_done.sort(
-            key=lambda x: datetime.strptime(x, self.formatStringWithYear)
+            key=lambda x: datetime.strptime(x, self.format_string_with_year)
         )
 
     def send_email_special_occassions(self):
@@ -312,10 +311,10 @@ class BirthdayMail:
         self.occasions: list = json.load(
             open(self.occasion_path))
 
-        for Occasion in self.occasions:
-            if current_date_withyear == Occasion["date"]:
-                self.sendEmailOnSpecialOccasion(Occasion)
-                saveJsontoFile(self.occasion_path, self.occasions)
+        for occasion in self.occasions:
+            if current_date_withyear == occasion["date"]:
+                self.sendEmailOnSpecialOccasion(occasion)
+                save_jsonto_file(self.occasion_path, self.occasions)
             else:
                 logging.info("--No Special occasion today")
 
@@ -342,29 +341,29 @@ class BirthdayMail:
         for l, i, j, k in lis:
             print(i, j, k, end="\n\n", sep="\n")
 
-    def nextBirthYear(self, birthdayString: str) -> int:
-        day1, month1 = birthdayString.split("-")
+    def next_birth_year(self, birthday_string: str) -> int:
+        day1, month1 = birthday_string.split("-")
         today = datetime.now()
         day2, month2, year = today.day, today.month, today.year
         if month1 == "02" and day1 == "29":
-            if isGreater(int(day1), int(month1), day2, month2) and isLeapYear(year):
+            if is_greater(int(day1), int(month1), day2, month2) and is_leap_year(year):
                 return year
             else:
                 return find_next_leap_year(year)
 
-        elif isGreater(int(day1), int(month1), day2, month2):
+        elif is_greater(int(day1), int(month1), day2, month2):
             return year
         else:
             return year + 1
 
     def count_down_for_birthday(
-        self, birthdayString: str
+        self, birthday_string: str
     ) -> tuple[datetime, timedelta]:
         today = datetime.now()
-        birthdayString = birthdayString + "-" + \
-            str(self.nextBirthYear(birthdayString))
+        birthday_string = birthday_string + "-" + \
+            str(self.nextBirthYear(birthday_string))
         birthday_ = datetime.strptime(
-            birthdayString, self.formatStringWithYear)
+            birthday_string, self.format_string_with_year)
         return birthday_, birthday_ - today
 
     def git_command_failed_mail(self, body: str, subject: str = "Git Command Failed") -> None:

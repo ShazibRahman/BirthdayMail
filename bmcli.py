@@ -1,30 +1,28 @@
 import argparse
 import os
+
 from message import BirthdayMail
 
-loggerPath = os.path.join(os.path.dirname(__file__),"data", "logger.log")
+loggerPath = os.path.join(os.path.dirname(__file__), "data", "logger.log")
 
 
-
-def readLogs():
+def read_logs():
     os.system(f"bat --paging=never {loggerPath}")
-    return
 
 
-def clearLogs():
-    with open(loggerPath, "w") as _:
-        pass
+def clear_logs():
+    open(loggerPath, "w").close()
 
 
-def cliMethod():
+def cli_method():
     if args.logs and args.logs == "show":
-        readLogs()
+        read_logs()
         return
     if args.logs and args.logs == "clear":
-        clearLogs()
+        clear_logs()
         return
     if args.logs is None and args.b is None and args.s is None:
-        readLogs()
+        clear_logs()
         return
     birthday = BirthdayMail()
 
@@ -40,7 +38,6 @@ def cliMethod():
         return
     if args.b == "a":
         birthday.get_all_bday_info(True)
-        return
 
 
 if __name__ == "__main__":
@@ -49,4 +46,4 @@ if __name__ == "__main__":
     parser.add_argument("-b", type=str, choices=["y", "n", "a"])
     parser.add_argument("-s", type=str, choices=["y", "n"])
     args = parser.parse_args()
-    cliMethod()
+    cli_method()
