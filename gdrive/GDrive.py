@@ -62,10 +62,22 @@ class GDrive:
         self.drive = GoogleDrive(self.gauth)
 
     def upload(self, file_path=FILE_PATH):
+        self.file_title = os.path.basename(file_path)
 
-        if os.path.exists(file_path) and len(self.file_list) > 0:
-            # +10 microsecond to avoid the time difference between local and remote because of the upload time
+        self.file_list = self.drive.ListFile(
+            {'q': f"title='{self.file_title}' and trashed=false"}).GetList()
+        if len(self.file_list) == 0:
+            self.file = self.drive.CreateFile(
+                {'title': self.file_title})
+        else:
+            self.file = self.file_list[0]
+        if os.path.exists(file_path):
             local_file_modified_time = os.path.getmtime(file_path) + 10
+        else:
+            local_file_modified_time = 0
+
+        if len(self.file_list) > 0:
+            # +10 microsecond to avoid the time difference between local and remote because of the upload time
 
             if local_file_modified_time <= self.get_remote_modified_timestamp():
                 logging.info(

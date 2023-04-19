@@ -2,7 +2,8 @@ import csv
 import json
 import sys
 import pathlib
-sys.path.append(pathlib.Path(__file__).parent.parent.resolve())
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 
 if __name__ == "__main__":
