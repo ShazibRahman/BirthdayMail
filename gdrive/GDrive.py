@@ -64,8 +64,12 @@ class GDrive:
     def upload(self, file_path=FILE_PATH):
         self.file_title = os.path.basename(file_path)
 
-        self.file_list = self.drive.ListFile(
-            {'q': f"title='{self.file_title}' and trashed=false"}).GetList()
+        try:
+            self.file_list = self.drive.ListFile(
+                {'q': f"title='{self.file_title}' and trashed=false"}).GetList()
+        except Exception as e:
+            logging.error("Error while getting file list from Google Drive.")
+            return
         if len(self.file_list) == 0:
             self.file = self.drive.CreateFile(
                 {'title': self.file_title})
@@ -106,9 +110,12 @@ class GDrive:
 
     def download(self, file_path=FILE_PATH):
         self.file_title = os.path.basename(file_path)
-
-        self.file_list = self.drive.ListFile(
-            {'q': f"title='{self.file_title}' and trashed=false"}).GetList()
+        try:
+            self.file_list = self.drive.ListFile(
+                {'q': f"title='{self.file_title}' and trashed=false"}).GetList()
+        except Exception as e:
+            logging.error("Error while getting file list from Google Drive.")
+            return False
         if len(self.file_list) == 0:
             self.file = self.drive.CreateFile(
                 {'title': self.file_title})
