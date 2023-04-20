@@ -202,7 +202,7 @@ class BirthdayMail:
             last_run_with_year_set = set()
 
             while last_run < current_datetime:
-                last_run_string = last_run.strftime(self.formatString)
+                last_run_string = last_run.strftime(self.format_string)
                 last_run_set.add(last_run_string)
                 last_run_with_year_set.add(
                     last_run.strftime(self.format_string_with_year)
@@ -210,7 +210,7 @@ class BirthdayMail:
                 last_run = last_run + timedelta(1)
 
             dates_list = [
-                datetime.strptime(x, self.formatString).strftime(
+                datetime.strptime(x, self.format_string).strftime(
                     self.format_late_mail_date
                 )
                 for x in last_run_set
@@ -259,7 +259,7 @@ class BirthdayMail:
                     f"script for {current_date_withyear} has already been executed"
                 )
                 exit(1)
-        current_time = current_date_time.strftime(self.formatString)
+        current_time = current_date_time.strftime(self.format_string)
         self.download_read_csv_from_server_then_upload()
         self.bday: dict = json.load(open(self.data_path))
 
@@ -313,7 +313,7 @@ class BirthdayMail:
 
         for occasion in self.occasions:
             if current_date_withyear == occasion["date"]:
-                self.sendEmailOnSpecialOccasion(occasion)
+                self.send_email_on_special_occasion(occasion)
                 save_jsonto_file(self.occasion_path, self.occasions)
             else:
                 logging.info("--No Special occasion today")
