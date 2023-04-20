@@ -85,9 +85,12 @@ class GDrive:
                 return
 
         self.file_title = os.path.basename(file_path)
-
-        self.file.SetContentFile(file_path)
-        self.file.Upload()
+        try:
+            self.file.SetContentFile(file_path)
+            self.file.Upload()
+        except Exception as e:
+            logging.error(
+                f"Error while uploading file '{self.file_title}' with error {e}")
 
         logging.info(
             f"File '{self.file_title} and {file_path}' uploaded to Google Drive.")
@@ -127,7 +130,12 @@ class GDrive:
             print(e)
 
             return False
-        self.file.GetContentFile(file_path)
+        try:
+            self.file.GetContentFile(file_path)
+        except Exception as e:
+            logging.error(
+                f"Error while downloading file '{self.file_title}' with error {e}")
+            return False
 
         logging.info(
             f"File '{self.file_title}' downloaded to {file_path} from Google Drive.")
