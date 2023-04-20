@@ -22,7 +22,7 @@ def cli_method():
         clear_logs()
         return
     if args.logs is None and args.b is None and args.s is None:
-        clear_logs()
+        read_logs()
         return
     birthday = BirthdayMail()
 
