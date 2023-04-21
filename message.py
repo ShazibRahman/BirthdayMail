@@ -145,10 +145,8 @@ class BirthdayMail:
                 logging.info(
                     f"The email has been sent to {person['name']} with email {person['mail']} using template {occasion['template']}"
                 )
-            else:
-                exit(1)
 
-            occasion["peopleToGreet"].remove(person)
+            # occasion["peopleToGreet"].remove(person) it is not very good to remove the person from the list that is being iterated over
 
     def message_func(self, val: dict, pending_mail=False) -> bool:
         receiver_email = val["mail"]
@@ -312,8 +310,9 @@ class BirthdayMail:
             open(self.occasion_path))
 
         for occasion in self.occasions:
-            if current_date_withyear == occasion["date"]:
+            if current_date_withyear == occasion["date"] or ('sent' in occasion and not occasion["sent"]):
                 self.send_email_on_special_occasion(occasion)
+                occasion["sent"] = True
                 save_jsonto_file(self.occasion_path, self.occasions)
             else:
                 logging.info("--No Special occasion today")
