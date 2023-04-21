@@ -361,7 +361,7 @@ class BirthdayMail:
     ) -> tuple[datetime, timedelta]:
         today = datetime.now()
         birthday_string = birthday_string + "-" + \
-            str(self.nextBirthYear(birthday_string))
+            str(self.next_birth_year(birthday_string))
         birthday_ = datetime.strptime(
             birthday_string, self.format_string_with_year)
         return birthday_, birthday_ - today
