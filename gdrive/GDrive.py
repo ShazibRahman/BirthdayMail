@@ -44,7 +44,7 @@ logging.basicConfig(
 
 
 class GDrive:
-    def __init__(self):
+    def __init__(self, folder_name="BirthDayMail"):
         self.gauth = GoogleAuth()
         self.gauth.settings['client_config_file'] = CLIENT_SECRET
         if os.path.exists(CRED_FILE):
@@ -60,13 +60,29 @@ class GDrive:
             self.gauth.SaveCredentialsFile(CRED_FILE)
 
         self.drive = GoogleDrive(self.gauth)
+        self.folder = self.create_or_get_folder(folder_name)
+
+    def create_or_get_folder(self, folder_name):
+        folder_list = self.drive.ListFile(
+            {'q': f"title='{folder_name}' and trashed=false and mimeType='application/vnd.google-apps.folder'"}).GetList()
+        if len(folder_list) == 0:
+            folder = self.drive.CreateFile(
+                {'title': folder_name, 'mimeType': 'application/vnd.google-apps.folder'})
+            folder.Upload()
+            logging.info(
+                f"Folder '{folder_name}' with Folder_id {folder['id']} created on Google Drive.")
+        else:
+            folder = folder_list[0]
+            logging.info(
+                f"Folder '{folder_name}' with Folder_id {folder['id']} found on Google Drive.")
+        return folder
 
     def upload(self, file_path=FILE_PATH):
         self.file_title = os.path.basename(file_path)
 
         try:
             self.file_list = self.drive.ListFile(
-                {'q': f"title='{self.file_title}' and trashed=false"}).GetList()
+                {'q': f"title='{self.file_title}' and trashed=false and '{self.folder['id']}' in parents"}).GetList()
         except Exception as e:
             logging.error("Error while getting file list from Google Drive.")
             return
@@ -112,7 +128,7 @@ class GDrive:
         self.file_title = os.path.basename(file_path)
         try:
             self.file_list = self.drive.ListFile(
-                {'q': f"title='{self.file_title}' and trashed=false"}).GetList()
+                {'q': f"title='{self.file_title}' and trashed=false and '{self.folder['id']}' in parents"}).GetList()
         except Exception as e:
             logging.error("Error while getting file list from Google Drive.")
             return False
