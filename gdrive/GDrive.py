@@ -1,18 +1,21 @@
+import logging
 import os
 import pathlib
-import logging
 from datetime import datetime
+
 import pytz
+
 try:
-    from pydrive.auth import GoogleAuth
+    from pydrive.auth import GoogleAuth, RefreshError
     from pydrive.drive import GoogleDrive
 except ImportError:
     if os.name == "nt":
         os.system("pip install -r requirement.txt")
     else:
         os.system("pip3 install -r requirement.txt")
-    from pydrive.auth import GoogleAuth
+    from pydrive.auth import GoogleAuth, RefreshError
     from pydrive.drive import GoogleDrive
+
 
 CRED_FILE = pathlib.Path(__file__).parent.joinpath(
     "credentials.json").resolve()
@@ -58,7 +61,10 @@ class GDrive:
             self.gauth.LocalWebserverAuth()
             self.gauth.SaveCredentialsFile(CRED_FILE)
         if self.gauth.access_token_expired:
-            self.gauth.Refresh()
+            try:
+                self.gauth.Refresh()
+            except RefreshError:
+                self.gauth.LocalWebserverAuth()
             self.gauth.SaveCredentialsFile(CRED_FILE)
 
         self.drive = GoogleDrive(self.gauth)
