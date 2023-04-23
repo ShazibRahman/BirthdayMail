@@ -28,6 +28,8 @@ LOCAL_DATE_TIMEZONE = pytz.timezone("Asia/Kolkata")
 DATA_PATH = pathlib.Path(__file__).parent.parent.joinpath(
     "data", "data.json").resolve()
 
+BUFFER_MILLISECS = 20
+
 logger_path = pathlib.Path(__file__).parent.parent.joinpath(
     "data", "logger.log").resolve()
 
@@ -92,7 +94,8 @@ class GDrive:
         else:
             self.file = self.file_list[0]
         if os.path.exists(file_path):
-            local_file_modified_time = os.path.getmtime(file_path) + 10
+            local_file_modified_time = os.path.getmtime(
+                file_path) + BUFFER_MILLISECS
         else:
             local_file_modified_time = 0
 
@@ -139,7 +142,8 @@ class GDrive:
             self.file = self.file_list[0]
 
         if os.path.exists(file_path):
-            local_file_modified_time = os.path.getmtime(file_path) + 10
+            local_file_modified_time = os.path.getmtime(
+                file_path) + BUFFER_MILLISECS
         else:
             local_file_modified_time = 0
 
