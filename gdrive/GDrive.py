@@ -31,6 +31,7 @@ LOCAL_DATE_TIMEZONE = pytz.timezone("Asia/Kolkata")
 DATA_PATH = pathlib.Path(__file__).parent.parent.joinpath(
     "data", "data.json").resolve()
 
+# 20 millisecond buffer to avoid the time difference between local and remote because of the upload time
 BUFFER_MILLISECS = 20
 
 logger_path = pathlib.Path(__file__).parent.parent.joinpath(
@@ -109,7 +110,6 @@ class GDrive:
             local_file_modified_time = 0
 
         if len(self.file_list) > 0:
-            # +10 microsecond to avoid the time difference between local and remote because of the upload time
 
             if local_file_modified_time <= self.get_remote_modified_timestamp():
                 logging.info(
