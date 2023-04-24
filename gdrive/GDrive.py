@@ -50,6 +50,7 @@ logging.basicConfig(
 
 class GDrive:
     def __init__(self, folder_name="BirthDayMail"):
+        self.folder_name = folder_name
         self.gauth = GoogleAuth()
         self.gauth.settings['client_config_file'] = CLIENT_SECRET
         if os.path.exists(CRED_FILE):
@@ -68,7 +69,7 @@ class GDrive:
             self.gauth.SaveCredentialsFile(CRED_FILE)
 
         self.drive = GoogleDrive(self.gauth)
-        self.folder = self.create_or_get_folder(folder_name)
+        self.folder = None
 
     def create_or_get_folder(self, folder_name):
         folder_list = self.drive.ListFile(
@@ -86,6 +87,8 @@ class GDrive:
         return folder
 
     def upload(self, file_path=FILE_PATH):
+        if self.folder is None:
+            self.folder = self.create_or_get_folder(self.folder_name)
         self.file_title = os.path.basename(file_path)
 
         try:
@@ -134,6 +137,8 @@ class GDrive:
         return remote_file_modified_time.timestamp()
 
     def download(self, file_path=FILE_PATH):
+        if self.folder is None:
+            self.folder = self.create_or_get_folder(self.folder_name)
         self.file_title = os.path.basename(file_path)
         try:
             self.file_list = self.drive.ListFile(
