@@ -1,8 +1,9 @@
 import csv
 import json
-import sys
-import pathlib
 import os
+import pathlib
+import sys
+
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 EMAIL_ADDRESS = "Email Address"
@@ -10,9 +11,11 @@ DATE = "date"
 MAIL = "mail"
 NAME = "name"
 if __name__ == "__main__":
-    from gdrive.GDrive import GDrive
     from sort_birthdays_json import main as sort_json
+
+    from gdrive.GDrive import GDrive
 else:
+    from gdrive.GDrive import GDrive
     from utils.sort_birthdays_json import main as sort_json
 
 
@@ -47,8 +50,8 @@ def get_email(data) -> set:
     return names
 
 
-def main(gdrive):
-    print(type(gdrive))
+def main():
+    gdrive = GDrive()
     mimetype = "text/csv"
     file_id = "1IGVrFmTQq-lePEaKWQxEzIAmYy8UwyXgQU0xqyQ3hzc"
     file_path = pathlib.Path(__file__).parent.joinpath(

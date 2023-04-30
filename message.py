@@ -1,13 +1,14 @@
 import json
-import ssl
-import smtplib
 import logging
-import time
 import os
 import random
-from typing import Tuple
-from email.message import EmailMessage
+import smtplib
+import ssl
+import time
 from datetime import datetime, timedelta
+from email.message import EmailMessage
+from typing import Tuple
+
 from gdrive.GDrive import GDrive
 from utils.csv_to_json import main as csv_to_json
 
@@ -247,7 +248,6 @@ class BirthdayMail:
                 f"script for {current_date_withyear} has already been executed"
             )
             exit(1)
-        self.gdrive = GDrive()
         if self.download():
             self.dates_done = json.load(
                 open(self.dates_done_path)
@@ -376,15 +376,15 @@ class BirthdayMail:
         send_mail(self.sender_email, self.password, message)
 
     def download(self):
-        return self.gdrive.download()
+        return GDrive().download()
 
     def upload(self):
-        return self.gdrive.upload()
+        return GDrive().upload()
 
     def download_read_csv_from_server_then_upload(self):
-        self.gdrive.download_data_file()
-        csv_to_json(self.gdrive)
-        self.gdrive.upload_data_file()
+        GDrive().download_data_file()
+        csv_to_json()
+        GDrive().upload_data_file()
 
 
 if __name__ == "__main__":

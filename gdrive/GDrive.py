@@ -1,6 +1,7 @@
 import logging
 import os
 import pathlib
+import uuid
 from datetime import datetime
 
 import pytz
@@ -50,6 +51,16 @@ logging.basicConfig(
 
 
 class GDrive:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.__initialized = False
+            print("GDrive object created")
+        else:
+            print("GDrive object reused")
+        return cls._instance
     def __init__(self, folder_name="BirthDayMail"):
         self.folder_name = folder_name
         self.gauth = GoogleAuth()
@@ -70,8 +81,11 @@ class GDrive:
             self.gauth.SaveCredentialsFile(CRED_FILE)
 
         self.drive = GoogleDrive(self.gauth)
-        self.folder = None
 
+    def __repr__(self) -> str:
+        if not hasattr(self, "_id"):
+            self._id = uuid.uuid4()
+        return f"{self.__class__.__name__}({self._id})"
     def create_or_get_folder(self, folder_name):
         folder_list = self.drive.ListFile(
             {'q': f"title='{folder_name}' and trashed=false and mimeType='application/vnd.google-apps.folder'"}).GetList()
@@ -88,7 +102,7 @@ class GDrive:
         return folder
 
     def upload(self, file_path=FILE_PATH):
-        if self.folder is None:
+        if not hasattr(self, "folder"):
             self.folder = self.create_or_get_folder(self.folder_name)
         self.file_title = os.path.basename(file_path)
 
@@ -137,7 +151,7 @@ class GDrive:
         return remote_file_modified_time.timestamp()
 
     def download(self, file_path=FILE_PATH):
-        if self.folder is None:
+        if not hasattr(self, "folder"):
             self.folder = self.create_or_get_folder(self.folder_name)
         self.file_title = os.path.basename(file_path)
         try:
