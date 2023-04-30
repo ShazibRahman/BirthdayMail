@@ -60,8 +60,12 @@ class GDrive:
             print("GDrive object created")
         else:
             print("GDrive object reused")
+            cls._instance.__initialized = True
         return cls._instance
     def __init__(self, folder_name="BirthDayMail"):
+        if self.__initialized:
+            print("__init__ not called again")
+            return
         self.folder_name = folder_name
         self.gauth = GoogleAuth()
         self.gauth.settings['client_config_file'] = CLIENT_SECRET
