@@ -81,6 +81,8 @@ class GDrive:
             try:
                 self.gauth.Refresh()
             except RefreshError:
+                if pathlib.Path(CRED_FILE).exists():
+                    pathlib.Path(CRED_FILE).unlink()
                 self.gauth.LocalWebserverAuth()
             self.gauth.SaveCredentialsFile(CRED_FILE)
 
