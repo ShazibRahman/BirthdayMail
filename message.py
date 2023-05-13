@@ -1,15 +1,19 @@
 import json
-import logging
 import os
 import random
 import smtplib
 import ssl
+import sys
 import time
 from datetime import datetime, timedelta
 from email.message import EmailMessage
 from typing import Tuple
 
-from gdrive.GDrive import GDrive
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+from gdrive.GDrive import GDrive  # autopep8: off
+
+from logger import getLogger  # autopep8: off
 from utils.csv_to_json import main as csv_to_json
 
 try:
@@ -22,24 +26,12 @@ except ImportError:
         os.system("pip3 install -r requirement.txt")
     from jinja2 import Template
 
-
-logger_path = os.path.join(os.path.dirname(__file__), "data", "logger.log")
-
-if not os.path.exists(logger_path):
-    open(logger_path, "w").close()
-
-logging.basicConfig(
-    filename=logger_path,
-    filemode="a",
-    level=logging.INFO,
-    format="%(asctime)s %(message)s",
-    datefmt="%m/%d/%Y %I:%M:%S %p",
-)
+logging = getLogger()
 
 ctx = ssl.create_default_context()
 ctx.verify_mode = ssl.CERT_REQUIRED
 anacron_user = "Shazib_Anacron"
-
+FOLDER_NAME = "BirthDayMail"
 
 def convert(seconds):
     return time.strftime("%H hours %M Minutes %S Seconds to go ", time.gmtime(seconds))
@@ -377,15 +369,16 @@ class BirthdayMail:
         send_mail(self.sender_email, self.password, message)
 
     def download(self):
-        return GDrive().download()
+        return GDrive(FOLDER_NAME,logging).download(self.dates_done_path)
 
     def upload(self):
-        return GDrive().upload()
+        return GDrive(FOLDER_NAME,logging).upload(self.dates_done_path)
 
     def download_read_csv_from_server_then_upload(self):
-        GDrive().download_data_file()
+        data_file = os.path.join(self.directory_string, "data", "data.json")
+        GDrive(FOLDER_NAME,logging).download(data_file)
         csv_to_json()
-        GDrive().upload_data_file()
+        GDrive(FOLDER_NAME,logging).download(data_file)
 
 
 if __name__ == "__main__":
@@ -397,3 +390,4 @@ if __name__ == "__main__":
 
     birthday.send_mail_from_json()
     birthday.send_email_special_occassions()
+    birthday.upload()

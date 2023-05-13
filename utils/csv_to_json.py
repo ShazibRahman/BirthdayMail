@@ -1,21 +1,26 @@
 import csv
 import json
+import logging
 import os
 import pathlib
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+from logger import getLogger  # autopep8: off
 
 EMAIL_ADDRESS = "Email Address"
 DATE = "date"
 MAIL = "mail"
 NAME = "name"
+log = getLogger()
 if __name__ == "__main__":
-    from sort_birthdays_json import main as sort_json
 
-    from gdrive.GDrive import GDrive
+    from gdrive.GDrive import GDrive  # ignore ImportError
+    from sort_birthdays_json import main as sort_json
 else:
-    from gdrive.GDrive import GDrive
+    from gdrive.GDrive import GDrive  # ignore ImportError
+
     from utils.sort_birthdays_json import main as sort_json
 
 
@@ -51,7 +56,7 @@ def get_email(data) -> set:
 
 
 def main():
-    gdrive = GDrive()
+    gdrive = GDrive(FOLDER_NAME, log)
     mimetype = "text/csv"
     file_id = "1IGVrFmTQq-lePEaKWQxEzIAmYy8UwyXgQU0xqyQ3hzc"
     file_path = pathlib.Path(__file__).parent.joinpath(
@@ -64,11 +69,15 @@ def main():
             "data", "data.json").resolve()
     )
 
+
+FOLDER_NAME = "BirthDayMail"
 
 if __name__ == "__main__":
-    gdrive = GDrive()
+    data_file = pathlib.Path(__file__).parent.parent.joinpath(
+        "data", "data.json").resolve()
+    gdrive = GDrive(FOLDER_NAME, log)
     mimetype = "text/csv"
-    gdrive.download_data_file()
+    gdrive.download(data_file)
     file_id = "1IGVrFmTQq-lePEaKWQxEzIAmYy8UwyXgQU0xqyQ3hzc"
     file_path = pathlib.Path(__file__).parent.joinpath(
         "Little Info (Responses).csv").resolve()
@@ -76,7 +85,6 @@ if __name__ == "__main__":
 
     csv_json(
         file_path,
-        pathlib.Path(__file__).parent.parent.joinpath(
-            "data", "data.json").resolve()
+        data_file
     )
-    gdrive.upload_data_file()
+    gdrive.upload(data_file)
