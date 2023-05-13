@@ -13,6 +13,8 @@ EMAIL_ADDRESS = "Email Address"
 DATE = "date"
 MAIL = "mail"
 NAME = "name"
+MOBILE_NUMBER = "mobile number"
+MOBILE = "mobile"
 log = getLogger()
 if __name__ == "__main__":
 
@@ -32,6 +34,7 @@ def csv_json(csv_path: str, json_path: str) -> None:
     with open(csv_path, encoding="utf-8") as csvFile:
         csv_reader = csv.DictReader(csvFile)
         for rows in csv_reader:
+            print(rows)
             if rows[EMAIL_ADDRESS] in names:
                 print(rows[EMAIL_ADDRESS], "already in the list")
             else:
@@ -43,6 +46,10 @@ def csv_json(csv_path: str, json_path: str) -> None:
                 if len(day) == 1:
                     day = "0" + day
                 info[DATE] = day + "-" + month
+                if rows[MOBILE_NUMBER] != "":
+                    info[MOBILE] = rows["+91"+MOBILE_NUMBER]
+                else:
+                    info[MOBILE] = ""
                 data.append(info)
                 print(rows[EMAIL_ADDRESS], "added to the list")
     sort_json(data)
@@ -81,6 +88,8 @@ if __name__ == "__main__":
     file_id = "1IGVrFmTQq-lePEaKWQxEzIAmYy8UwyXgQU0xqyQ3hzc"
     file_path = pathlib.Path(__file__).parent.joinpath(
         "Little Info (Responses).csv").resolve()
+    with open(file_path, "r") as f:
+        print(f.read())
     gdrive.download_by_id_and_file_format(file_path, file_id, mimetype)
 
     csv_json(

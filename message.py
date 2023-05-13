@@ -14,6 +14,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from gdrive.GDrive import GDrive  # autopep8: off
 
 from logger import getLogger  # autopep8: off
+from tele.telegram import Telegram  # autopep8: off
 from utils.csv_to_json import main as csv_to_json
 
 try:
@@ -216,6 +217,7 @@ class BirthdayMail:
                         f"--trying backlog mail dated={val['date']} for email={val['mail']}")
                     success = self.message_func(val, True)
                     if success:
+                        self.send_telegram(val["mobile"],val["name"])
                         logging.info(
                             f"Backlog email for date {val['date']} and email {val['mail']} has been sent"
                         )
@@ -267,6 +269,7 @@ class BirthdayMail:
         for val in self.bday:
             if current_time == val["date"]:
                 success = self.message_func(val)
+                self.send_telegram(val["mobile"],val["name"])
                 match = True
 
         if match and success:
@@ -379,6 +382,10 @@ class BirthdayMail:
         GDrive(FOLDER_NAME,logging).download(data_file)
         csv_to_json()
         GDrive(FOLDER_NAME,logging).download(data_file)
+    def send_telegram(self,chat:str ,name: str):
+        with Telegram().client:
+            Telegram().client.loop.run_until_complete(
+                Telegram().message(chat, name))
 
 
 if __name__ == "__main__":
