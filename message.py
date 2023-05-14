@@ -1,3 +1,4 @@
+# autopep8: off
 import json
 import os
 import random
@@ -9,13 +10,12 @@ from datetime import datetime, timedelta
 from email.message import EmailMessage
 from typing import Tuple
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
-from gdrive.GDrive import GDrive  # autopep8: off
-
-from logger import getLogger  # autopep8: off
-from tele.telegram import Telegram  # autopep8: off
+from logger import getLogger
+from tele.telegram import Telegram
 from utils.csv_to_json import main as csv_to_json
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from gdrive.GDrive import GDrive  # pylint: disable=import-error
 
 try:
     from jinja2 import Template
