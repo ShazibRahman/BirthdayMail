@@ -74,4 +74,4 @@ class Telegram:
 if __name__ == "__main__":
     with Telegram().client:
         Telegram().client.loop.run_until_complete(
-            Telegram().message("me", "shazib"))
+            Telegram().message("+91 79705 02165", "shazib"))
