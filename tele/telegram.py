@@ -10,8 +10,8 @@ try:
 except ImportError:
     print("installing dependencies")
     # print("pip install telethon")
-    os.system("pip install -r requirements.txt")
-    exit(1)
+    os.system("pip install -r requirement.txt")
+    from telethon import TelegramClient
 
 from logger import getLogger  # autopep8: off
 
