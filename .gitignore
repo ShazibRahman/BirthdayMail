@@ -13,6 +13,7 @@ dates.json
 __pycache__/
 *.py[cod]
 *$py.class
+**.session**
 
 # C extensions
 *.so

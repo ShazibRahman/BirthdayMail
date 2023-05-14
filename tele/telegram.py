@@ -1,8 +1,15 @@
 import json
 import os
 import pathlib
+import sys
+
+sys.path.append(pathlib.Path(__file__).parent.parent.resolve().as_posix())
 
 from telethon import TelegramClient
+
+from logger import getLogger  # autopep8: off
+
+logging = getLogger()
 
 
 def readJson(path: str):
@@ -28,6 +35,7 @@ class Telegram:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
+            print("Telegram instance created")
             cls._initiated = False
         return cls._instance
 
@@ -39,18 +47,25 @@ class Telegram:
                 telegram_client_secret["api_id"],
                 telegram_client_secret["api_hash"],
             )
+        else:
+            print("Telegram instance already created")
 
     async def message(self, chat_id: str, name: str) -> None:
 
         message = get_message_randomly().format(name=name)
         await self.client.start(telegram_client_secret["phone_number"])
+        try:
+            await self.client.send_message(chat_id, message)
+        except Exception as e:
+            print(e)
+            logging.error(e)
+        finally:
+            await self.client.disconnect()
 
-        await self.client.send_message(chat_id, message)
-
-        await self.client.disconnect()
+        
 
 
 if __name__ == "__main__":
     with Telegram().client:
         Telegram().client.loop.run_until_complete(
-            Telegram().message("+91 79705 02165", "shazib"))
+            Telegram().message("+918227012301", "shazib"))
