@@ -5,7 +5,13 @@ import sys
 
 sys.path.append(pathlib.Path(__file__).parent.parent.resolve().as_posix())
 
-from telethon import TelegramClient
+try:
+    from telethon import TelegramClient
+except ImportError:
+    print("installing dependencies")
+    # print("pip install telethon")
+    os.system("pip install -r requirements.txt")
+    exit(1)
 
 from logger import getLogger  # autopep8: off
 
