@@ -30,8 +30,6 @@ except ImportError:
 
 logging = getLogger()
 
-ctx = ssl.create_default_context()
-ctx.verify_mode = ssl.CERT_REQUIRED
 anacron_user = "Shazib_Anacron"
 FOLDER_NAME = "BirthDayMail"
 
@@ -79,6 +77,8 @@ def is_greater(day1: int, month1: int, day2: int, month2: int) -> bool:
 
 @timeit
 def send_mail(sender_email: str, password: str, message: EmailMessage):
+    ctx = ssl.create_default_context()
+    ctx.verify_mode = ssl.CERT_REQUIRED
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
             server.login(sender_email, password)
@@ -167,7 +167,7 @@ class BirthdayMail:
 
         message.set_content(context_template, subtype="html")
         return send_mail(self.sender_email, self.password, message)
-    
+
     @timeit
     def check_for_pending_and_send_message(self):
 
