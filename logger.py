@@ -1,5 +1,6 @@
 import logging as log
 import pathlib
+import sys
 
 logger_path = pathlib.Path(__file__).parent.joinpath(
     "data", "logger.log").resolve()
@@ -11,10 +12,10 @@ log.basicConfig(
     filename=logger_path,
     filemode="a",
     level=log.INFO,
-    format="%(asctime)s %(message)s",
+    format="%(asctime)s %(levelname)s %(filename)s %(lineno)d %(funcName)s %(message)s  ",
     datefmt="%m/%d/%Y %I:%M:%S %p",
 )
-
+log.getLogger().addHandler(log.StreamHandler(sys.stdout))
 
 def getLogger() -> log.Logger:
     return log

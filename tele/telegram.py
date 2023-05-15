@@ -63,7 +63,6 @@ class Telegram:
         try:
             await self.client.send_message(chat_id, message)
         except Exception as e:
-            print(e)
             logging.error(e)
         finally:
             await self.client.disconnect()

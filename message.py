@@ -13,6 +13,7 @@ from typing import Tuple
 from logger import getLogger
 from tele.telegram import Telegram
 from utils.csv_to_json import main as csv_to_json
+from utils.time_it import timeit
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from gdrive.GDrive import GDrive  # pylint: disable=import-error
@@ -41,13 +42,13 @@ def convert(seconds):
 def render_template(template: Template, context: dict):
     return template.render(context)
 
-
+@timeit
 def save_jsonto_file(file_name: str, data: list, indent: int = 4) -> None:
     with open(file_name, "w") as f:
         json.dump(data, f, indent=indent)
     logging.info(f"write changes to {file_name=}")
 
-
+@timeit
 def read_json_to_py_objecy(file_name: str):
     with open(file_name) as f:
         return json.load(f)
@@ -76,7 +77,7 @@ def is_greater(day1: int, month1: int, day2: int, month2: int) -> bool:
     else:
         return False
 
-
+@timeit
 def send_mail(sender_email: str, password: str, message: EmailMessage):
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
@@ -166,7 +167,8 @@ class BirthdayMail:
 
         message.set_content(context_template, subtype="html")
         return send_mail(self.sender_email, self.password, message)
-
+    
+    @timeit
     def check_for_pending_and_send_message(self):
 
         if not self.dates_done or len(self.dates_done) <= 0:
@@ -232,7 +234,7 @@ class BirthdayMail:
             self.sort_date_dones_files()
             save_jsonto_file(self.dates_done_path, self.dates_done)
         return True
-
+    @timeit
     def send_mail_from_json(self):
         self.dates_done: list[str] = json.load(
             open(self.dates_done_path)
@@ -242,7 +244,7 @@ class BirthdayMail:
             logging.info(
                 f"script for {current_date_withyear} has already been executed"
             )
-            exit(1)
+            return
         if self.download():
             self.dates_done = json.load(
                 open(self.dates_done_path)
@@ -251,7 +253,7 @@ class BirthdayMail:
                 logging.info(
                     f"script for {current_date_withyear} has already been executed"
                 )
-                exit(1)
+                return
         current_time = current_date_time.strftime(self.format_string)
         self.download_read_csv_from_server_then_upload()
         self.bday: dict = json.load(open(self.data_path))
@@ -260,7 +262,7 @@ class BirthdayMail:
 
         if not prev_success:
             logging.info("---Sending Backlog email failed---")
-            exit(1)
+            return
 
         match: bool = False
         success: bool = False
@@ -370,18 +372,17 @@ class BirthdayMail:
         message["To"] = self.sender_email
         message.set_content(body)
         send_mail(self.sender_email, self.password, message)
-
+    @timeit
     def download(self):
         return GDrive(FOLDER_NAME,logging).download(self.dates_done_path)
-
+    @timeit
     def upload(self):
         return GDrive(FOLDER_NAME,logging).upload(self.dates_done_path)
-
+    @timeit
     def download_read_csv_from_server_then_upload(self):
-        data_file = os.path.join(self.directory_string, "data", "data.json")
-        GDrive(FOLDER_NAME,logging).download(data_file)
+        GDrive(FOLDER_NAME,logging).download(self.data_path)
         csv_to_json()
-        GDrive(FOLDER_NAME,logging).download(data_file)
+        GDrive(FOLDER_NAME,logging).upload(self.data_path)
     def send_telegram(self,chat:str ,name: str):
         with Telegram().client:
             Telegram().client.loop.run_until_complete(
