@@ -1,11 +1,12 @@
 import argparse
 import os
 
+from logger import getLogger
 from message import BirthdayMail
 
 loggerPath = os.path.join(os.path.dirname(__file__), "data", "logger.log")
 
-
+logging = getLogger()
 def read_logs():
     os.system(f"bat --paging=never {loggerPath}")
 
@@ -27,7 +28,10 @@ def cli_method():
     birthday = BirthdayMail()
 
     if args.s == "y":
-        birthday.send_mail_from_json()
+        if birthday.send_mail_from_json() is None:
+            logging.info("Exiting...")
+            exit(0)
+
         birthday.send_email_special_occassions()
         birthday.upload()
 

@@ -8,6 +8,7 @@ import sys
 import time
 from datetime import datetime, timedelta
 from email.message import EmailMessage
+from tkinter import NO
 from typing import Tuple
 
 from logger import getLogger
@@ -244,7 +245,7 @@ class BirthdayMail:
             logging.info(
                 f"script for {current_date_withyear} has already been executed"
             )
-            return
+            return None
         if self.download():
             self.dates_done = json.load(
                 open(self.dates_done_path)
@@ -253,7 +254,7 @@ class BirthdayMail:
                 logging.info(
                     f"script for {current_date_withyear} has already been executed"
                 )
-                return
+                return None
         current_time = current_date_time.strftime(self.format_string)
         self.download_read_csv_from_server_then_upload()
         self.bday: dict = json.load(open(self.data_path))
@@ -262,7 +263,7 @@ class BirthdayMail:
 
         if not prev_success:
             logging.info("---Sending Backlog email failed---")
-            return
+            return None
 
         match: bool = False
         success: bool = False
@@ -396,6 +397,8 @@ if __name__ == "__main__":
     logging.info(
         f"--logged in as {user=} , {__name__=} and {working_directory=}")
 
-    birthday.send_mail_from_json()
+    if birthday.send_mail_from_json() is None:
+        logging.info("exiting")
+        exit(0)
     birthday.send_email_special_occassions()
     birthday.upload()
