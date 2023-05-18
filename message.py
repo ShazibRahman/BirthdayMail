@@ -287,6 +287,7 @@ class BirthdayMail:
         if modified_dates_done_file:
             self.sort_date_dones_files()
             save_jsonto_file(self.dates_done_path, self.dates_done)
+        return True
 
     def get_current_date(self) -> Tuple[datetime, str]:
         current_date_time = datetime.now()
@@ -391,11 +392,7 @@ class BirthdayMail:
 
 
 if __name__ == "__main__":
-    user = os.environ.get("USER")
-    working_directory = os.getcwd()
     birthday = BirthdayMail()
-    logging.info(
-        f"--logged in as {user=} , {__name__=} and {working_directory=}")
 
     if birthday.send_mail_from_json() is None:
         logging.info("exiting")
