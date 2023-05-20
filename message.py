@@ -386,9 +386,11 @@ class BirthdayMail:
         csv_to_json()
         GDrive(FOLDER_NAME,logging).upload(self.data_path)
     def send_telegram(self,chat:str ,name: str):
-        with Telegram().client:
-            Telegram().client.loop.run_until_complete(
-                Telegram().message(chat, name))
+        chat_ = chat.strip()
+        if chat_!="":
+            with Telegram().client:
+                Telegram().client.loop.run_until_complete(
+                    Telegram().message(chat_, name))
 
 
 if __name__ == "__main__":
