@@ -59,14 +59,13 @@ class Telegram:
     async def message(self, chat_id: str, name: str) -> None:
 
         message = get_message_randomly().format(name=name)
+        logging.info(f"Sending message to {chat_id}")
         await self.client.start(telegram_client_secret["phone_number"])
         try:
             await self.client.send_message(chat_id, message)
         except Exception as e:
             logging.error(e)
-        finally:
-            await self.client.disconnect()
-
+        
         
 
 
