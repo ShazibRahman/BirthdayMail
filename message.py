@@ -10,6 +10,8 @@ from datetime import datetime, timedelta
 from email.message import EmailMessage
 from typing import Tuple
 
+from flask import ctx
+
 from logger import getLogger
 from tele.telegram import Telegram
 from utils.csv_to_json import main as csv_to_json
@@ -84,6 +86,20 @@ def send_mail(sender_email: str, password: str, message: EmailMessage):
             server.login(sender_email, password)
             server.send_message(message)
             logging.info(f"---Mail sent to {message['To']}---")
+    except Exception as e:
+        logging.error("---Network Error---"+str(e))
+        return False
+    return True
+
+@timeit
+def send_mail(sender_email: str, password: str, message:str,subject:str="Error"):
+    ctx = ssl.create_default_context()
+    ctx.verify_mode = ssl.CERT_REQUIRED
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
+            message = f"Subject: {subject}\n\n{message}"
+            server.login(sender_email, password)
+            server.sendmail(sender_email, sender_email, message)
     except Exception as e:
         logging.error("---Network Error---"+str(e))
         return False
@@ -270,8 +286,15 @@ class BirthdayMail:
 
         for val in self.bday:
             if current_time == val["date"]:
+                success_telegram = self.check_if_session_connection()
+                if not success_telegram:
+                    exit(0)
                 success = self.message_func(val)
-                self.send_telegram(val["mobile"],val["name"])
+                if success:
+                    self.send_telegram(val["mobile"],val["name"])
+                    logging.info(
+                        f"email for date {val['date']} and email {val['mail']} has been sent"
+                    )
                 match = True
 
         if match and success:
@@ -385,6 +408,17 @@ class BirthdayMail:
         csv_to_json()
         GDrive(FOLDER_NAME,logging).upload(self.data_path)
     @timeit
+    def check_if_session_connection(self):
+        try:
+            with Telegram().client:
+                ...
+        except Exception as e:
+            print(e)
+            logging.error("---Telegram Error---")
+            send_mail(self.sender_email, self.password, "---Telegram Error---")
+            return False
+        return True
+    @timeit
     def send_telegram(self,chat:str ,name: str):
         try:
             with Telegram().client:
@@ -392,6 +426,7 @@ class BirthdayMail:
                     Telegram().message(chat, name))
         except Exception as e:
             logging.error("---Telegram Error---"+str(e))
+            send_mail(self.sender_email, self.password, "---Telegram Error---"+str(e),"---Telegram Error---"+str(e))
             return False
         return True
         

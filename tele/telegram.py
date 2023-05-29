@@ -1,7 +1,11 @@
+import asyncio
 import json
 import os
 import pathlib
 import sys
+from http import client
+
+import telethon
 
 sys.path.append(pathlib.Path(__file__).parent.parent.resolve().as_posix())
 
@@ -47,11 +51,16 @@ class Telegram:
     def __init__(self) -> None:
         if not self._initiated:
             self._initiated = True
+            print(SESSSION_PATH)
+
             self.client = TelegramClient(
                 SESSSION_PATH,
                 telegram_client_secret["api_id"],
                 telegram_client_secret["api_hash"],
             )
+            asyncio.get_event_loop().run_until_complete(self.client.connect())
+            if not self.client.is_connected():
+                self.client.connect()
         else:
             print("Telegram instance already created")
 
@@ -69,6 +78,9 @@ class Telegram:
 
 
 if __name__ == "__main__":
-    with Telegram().client:
-        Telegram().client.loop.run_until_complete(
-            Telegram().message("+91 79705 02165", "shazib"))
+    try:
+        telegram = Telegram()
+    except Exception as e:
+        print(e)
+        with Telegram().client:
+            Telegram().client.loop.run_until_complete(Telegram().message("me", "test"))
