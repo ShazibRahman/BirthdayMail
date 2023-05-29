@@ -91,20 +91,6 @@ def send_mail(sender_email: str, password: str, message: EmailMessage):
         return False
     return True
 
-@timeit
-def send_mail(sender_email: str, password: str, message:str,subject:str="Error"):
-    ctx = ssl.create_default_context()
-    ctx.verify_mode = ssl.CERT_REQUIRED
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
-            message = f"Subject: {subject}\n\n{message}"
-            server.login(sender_email, password)
-            server.sendmail(sender_email, sender_email, message)
-    except Exception as e:
-        logging.error("---Network Error---"+str(e))
-        return False
-    return True
-
 
 class BirthdayMail:
     def __init__(self) -> None:
@@ -413,7 +399,7 @@ class BirthdayMail:
     @timeit
     def send_telegram(self,chat:str ,name: str):
         return True
-        
+
 
 
 if __name__ == "__main__":
