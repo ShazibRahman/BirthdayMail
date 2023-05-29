@@ -384,8 +384,17 @@ class BirthdayMail:
         GDrive(FOLDER_NAME,logging).download(self.data_path)
         csv_to_json()
         GDrive(FOLDER_NAME,logging).upload(self.data_path)
+    @timeit
     def send_telegram(self,chat:str ,name: str):
-        ...
+        try:
+            with Telegram().client:
+                Telegram().client.loop.run_until_complete(
+                    Telegram().message(chat, name))
+        except Exception as e:
+            logging.error("---Telegram Error---"+str(e))
+            return False
+        return True
+        
 
 
 if __name__ == "__main__":

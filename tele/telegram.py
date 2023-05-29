@@ -22,13 +22,12 @@ def readJson(path: str):
     with open(path, "r") as f:
         return json.load(f)
 
-
 telegram_client_secret = readJson(pathlib.Path(
     __file__).parent.joinpath("client_secret.json").resolve().as_posix())
 
 MESSAGES: list[str] = readJson(pathlib.Path(__file__).parent.joinpath(
     "messages.json").resolve().as_posix())
-
+SESSSION_PATH = pathlib.Path(__file__).parent.joinpath("telegram.session").resolve().as_posix()
 
 def get_message_randomly() -> str:
     import random
@@ -49,7 +48,7 @@ class Telegram:
         if not self._initiated:
             self._initiated = True
             self.client = TelegramClient(
-                "telegram",
+                SESSSION_PATH,
                 telegram_client_secret["api_id"],
                 telegram_client_secret["api_hash"],
             )
@@ -65,8 +64,8 @@ class Telegram:
             await self.client.send_message(chat_id, message)
         except Exception as e:
             logging.error(e)
-        
-        
+
+
 
 
 if __name__ == "__main__":
