@@ -8,7 +8,6 @@ import sys
 import time
 from datetime import datetime, timedelta
 from email.message import EmailMessage
-from tkinter import NO
 from typing import Tuple
 
 from logger import getLogger
