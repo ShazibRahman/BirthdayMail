@@ -4,6 +4,8 @@ import os
 import pathlib
 import sys
 from http import client
+from signal import raise_signal
+from time import sleep
 
 import telethon
 
@@ -58,9 +60,8 @@ class Telegram:
                 telegram_client_secret["api_id"],
                 telegram_client_secret["api_hash"],
             )
-            asyncio.get_event_loop().run_until_complete(self.client.connect())
             if not self.client.is_connected():
-                self.client.connect()
+                raise Exception("Telegram client is not connected")
         else:
             print("Telegram instance already created")
 

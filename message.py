@@ -409,25 +409,9 @@ class BirthdayMail:
         GDrive(FOLDER_NAME,logging).upload(self.data_path)
     @timeit
     def check_if_session_connection(self):
-        try:
-            with Telegram().client:
-                ...
-        except Exception as e:
-            print(e)
-            logging.error("---Telegram Error---")
-            send_mail(self.sender_email, self.password, "---Telegram Error---")
-            return False
         return True
     @timeit
     def send_telegram(self,chat:str ,name: str):
-        try:
-            with Telegram().client:
-                Telegram().client.loop.run_until_complete(
-                    Telegram().message(chat, name))
-        except Exception as e:
-            logging.error("---Telegram Error---"+str(e))
-            send_mail(self.sender_email, self.password, "---Telegram Error---"+str(e),"---Telegram Error---"+str(e))
-            return False
         return True
         
 
