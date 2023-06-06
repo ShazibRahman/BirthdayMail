@@ -325,7 +325,7 @@ class BirthdayMail:
             else:
                 logging.info("--No Special occasion today")
 
-    def get_all_bday_info(self, print_all: bool = False):
+    def get_all_bday_info(self, print_num: str = "a"):
         self.bday: dict = json.load(
             open(self.data_path))
         lis = []
@@ -342,8 +342,8 @@ class BirthdayMail:
                     parse_date_to_look_good, days_rem_mes]
             )
         lis.sort()
-        if not print_all:
-            lis = lis[:3]
+        if print_num!="a":
+            lis = lis[:int(print_num)]
 
         for l, i, j, k in lis:
             print(i, j, k, end="\n\n", sep="\n")

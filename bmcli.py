@@ -37,8 +37,8 @@ def cli_method():
 
         return
 
-    if args.b == "y":
-        birthday.get_all_bday_info()
+    if args.b is not None and args.b != "":
+        birthday.get_all_bday_info(args.b)
         return
     if args.b == "a":
         birthday.get_all_bday_info(True)
@@ -47,7 +47,7 @@ def cli_method():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--logs", type=str, choices=["show", "clear"])
-    parser.add_argument("-b", type=str, choices=["y", "n", "a"])
+    parser.add_argument("-b", type=str)
     parser.add_argument("-s", type=str, choices=["y", "n"])
     args = parser.parse_args()
     cli_method()

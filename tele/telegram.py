@@ -84,4 +84,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
         with Telegram().client:
-            Telegram().client.loop.run_until_complete(Telegram().message("me", "test"))
+            Telegram().client.loop.run_until_complete(Telegram().message("me", "shazin"))
