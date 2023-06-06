@@ -40,8 +40,6 @@ def cli_method():
     if args.b is not None and args.b != "":
         birthday.get_all_bday_info(args.b)
         return
-    if args.b == "a":
-        birthday.get_all_bday_info(True)
 
 
 if __name__ == "__main__":
