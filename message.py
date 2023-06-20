@@ -11,11 +11,11 @@ from email.message import EmailMessage
 from typing import Tuple
 
 from logger import getLogger
-from tele.telegram import Telegram
 from utils.csv_to_json import main as csv_to_json
 from utils.time_it import timeit
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+# noinspection PyUnresolvedReferences
 from gdrive.GDrive import GDrive  # noqa: E402
 
 try:
@@ -33,6 +33,7 @@ logging = getLogger()
 anacron_user = "Shazib_Anacron"
 FOLDER_NAME = "BirthDayMail"
 
+
 def convert(seconds):
     return time.strftime("%H hours %M Minutes %S Seconds to go ", time.gmtime(seconds))
 
@@ -40,11 +41,13 @@ def convert(seconds):
 def render_template(template: Template, context: dict):
     return template.render(context)
 
+
 @timeit
 def save_jsonto_file(file_name: str, data: list, indent: int = 4) -> None:
     with open(file_name, "w") as f:
         json.dump(data, f, indent=indent)
     logging.info(f"write changes to {file_name=}")
+
 
 @timeit
 def read_json_to_py_objecy(file_name: str):
@@ -75,6 +78,7 @@ def is_greater(day1: int, month1: int, day2: int, month2: int) -> bool:
     else:
         return False
 
+
 @timeit
 def send_mail(sender_email: str, password: str, message: EmailMessage):
     ctx = ssl.create_default_context()
@@ -85,14 +89,33 @@ def send_mail(sender_email: str, password: str, message: EmailMessage):
             server.send_message(message)
             logging.info(f"---Mail sent to {message['To']}---")
     except Exception as e:
-        logging.error("---Network Error---"+str(e))
+        logging.error("---Network Error---" + str(e))
         return False
     return True
+
+
+def next_birth_year(birthday_string: str) -> int:
+    day1, month1 = birthday_string.split("-")
+    today = datetime.now()
+    day2, month2, year = today.day, today.month, today.year
+    if month1 == "02" and day1 == "29":
+        if is_greater(int(day1), int(month1), day2, month2) and is_leap_year(year):
+            return year
+        else:
+            return find_next_leap_year(year)
+
+    elif is_greater(int(day1), int(month1), day2, month2):
+        return year
+    else:
+        return year + 1
 
 
 class BirthdayMail:
     def __init__(self) -> None:
 
+        self.occasions = None
+        self.bday = None
+        self.dates_done = None
         logging.info("----Starting the application----")
         self.logging = logging
 
@@ -131,7 +154,7 @@ class BirthdayMail:
         for person in occasion["peopleToGreet"]:
             message = EmailMessage()
             message["Subject"] = (
-                occasion["subject"] + " " + person["name"].split("(")[0] + "!"
+                    occasion["subject"] + " " + person["name"].split("(")[0] + "!"
             )
             message["From"] = self.sender_email
             message["To"] = person["mail"]
@@ -142,7 +165,8 @@ class BirthdayMail:
                     f"The email has been sent to {person['name']} with email {person['mail']} using template {occasion['template']}"
                 )
 
-            # occasion["peopleToGreet"].remove(person) it is not very good to remove the person from the list that is being iterated over
+            # occasion["peopleToGreet"].remove(person) it is not very good to remove the person from the list that is
+            # being iterated over
 
     def message_func(self, val: dict, pending_mail=False) -> bool:
         receiver_email = val["mail"]
@@ -219,7 +243,7 @@ class BirthdayMail:
                         f"--trying backlog mail dated={val['date']} for email={val['mail']}")
                     success = self.message_func(val, True)
                     if success:
-                        self.send_telegram(val["mobile"],val["name"])
+                        self.send_telegram()
                         logging.info(
                             f"Backlog email for date {val['date']} and email {val['mail']} has been sent"
                         )
@@ -234,6 +258,7 @@ class BirthdayMail:
             self.sort_date_dones_files()
             save_jsonto_file(self.dates_done_path, self.dates_done)
         return True
+
     @timeit
     def send_mail_from_json(self):
         self.dates_done: list[str] = json.load(
@@ -275,7 +300,7 @@ class BirthdayMail:
                     exit(0)
                 success = self.message_func(val)
                 if success:
-                    self.send_telegram(val["mobile"],val["name"])
+                    self.send_telegram()
                     logging.info(
                         f"email for date {val['date']} and email {val['mail']} has been sent"
                     )
@@ -337,36 +362,21 @@ class BirthdayMail:
 
             lis.append(
                 [diff_datetime.days, val["name"],
-                    parse_date_to_look_good, days_rem_mes]
+                 parse_date_to_look_good, days_rem_mes]
             )
         lis.sort()
-        if print_num!="a":
+        if print_num != "a":
             lis = lis[:int(print_num)]
 
-        for l, i, j, k in lis:
+        for _, i, j, k in lis:
             print(i, j, k, end="\n\n", sep="\n")
 
-    def next_birth_year(self, birthday_string: str) -> int:
-        day1, month1 = birthday_string.split("-")
-        today = datetime.now()
-        day2, month2, year = today.day, today.month, today.year
-        if month1 == "02" and day1 == "29":
-            if is_greater(int(day1), int(month1), day2, month2) and is_leap_year(year):
-                return year
-            else:
-                return find_next_leap_year(year)
-
-        elif is_greater(int(day1), int(month1), day2, month2):
-            return year
-        else:
-            return year + 1
-
     def count_down_for_birthday(
-        self, birthday_string: str
+            self, birthday_string: str
     ) -> tuple[datetime, timedelta]:
         today = datetime.now()
         birthday_string = birthday_string + "-" + \
-            str(self.next_birth_year(birthday_string))
+                          str(next_birth_year(birthday_string))
         birthday_ = datetime.strptime(
             birthday_string, self.format_string_with_year)
         return birthday_, birthday_ - today
@@ -380,24 +390,28 @@ class BirthdayMail:
         message["To"] = self.sender_email
         message.set_content(body)
         send_mail(self.sender_email, self.password, message)
+
     @timeit
     def download(self):
-        return GDrive(FOLDER_NAME,logging).download(self.dates_done_path)
+        return GDrive(FOLDER_NAME, logging).download(self.dates_done_path)
+
     @timeit
     def upload(self):
-        return GDrive(FOLDER_NAME,logging).upload(self.dates_done_path)
+        return GDrive(FOLDER_NAME, logging).upload(self.dates_done_path)
+
     @timeit
     def download_read_csv_from_server_then_upload(self):
-        GDrive(FOLDER_NAME,logging).download(self.data_path)
+        GDrive(FOLDER_NAME, logging).download(self.data_path)
         csv_to_json()
-        GDrive(FOLDER_NAME,logging).upload(self.data_path)
+        GDrive(FOLDER_NAME, logging).upload(self.data_path)
+
     @timeit
     def check_if_session_connection(self):
         return True
-    @timeit
-    def send_telegram(self,chat:str ,name: str):
-        return True
 
+    @timeit
+    def send_telegram(self):
+        return True
 
 
 if __name__ == "__main__":

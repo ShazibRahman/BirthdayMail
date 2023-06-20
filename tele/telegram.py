@@ -1,13 +1,7 @@
-import asyncio
 import json
 import os
 import pathlib
 import sys
-from http import client
-from signal import raise_signal
-from time import sleep
-
-import telethon
 
 sys.path.append(pathlib.Path(__file__).parent.parent.resolve().as_posix())
 
@@ -28,12 +22,14 @@ def readJson(path: str):
     with open(path, "r") as f:
         return json.load(f)
 
+
 telegram_client_secret = readJson(pathlib.Path(
     __file__).parent.joinpath("client_secret.json").resolve().as_posix())
 
 MESSAGES: list[str] = readJson(pathlib.Path(__file__).parent.joinpath(
     "messages.json").resolve().as_posix())
 SESSSION_PATH = pathlib.Path(__file__).parent.joinpath("telegram.session").resolve().as_posix()
+
 
 def get_message_randomly() -> str:
     import random
@@ -74,8 +70,6 @@ class Telegram:
             await self.client.send_message(chat_id, message)
         except Exception as e:
             logging.error(e)
-
-
 
 
 if __name__ == "__main__":

@@ -17,5 +17,6 @@ log.basicConfig(
 )
 log.getLogger().addHandler(log.StreamHandler(sys.stdout))
 
+
 def getLogger() -> log.Logger:
     return log

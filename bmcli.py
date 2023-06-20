@@ -7,6 +7,8 @@ from message import BirthdayMail
 loggerPath = os.path.join(os.path.dirname(__file__), "data", "logger.log")
 
 logging = getLogger()
+
+
 def read_logs():
     os.system(f"bat --paging=never {loggerPath}")
 

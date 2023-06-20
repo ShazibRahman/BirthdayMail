@@ -19,7 +19,7 @@ MOBILE = "mobile"
 log = getLogger()
 if __name__ == "__main__":
 
-    from gdrive.GDrive import GDrive  # ignore ImportError
+    from gdrive.GDrive import GDrive
     from sort_birthdays_json import main as sort_json
 else:
     from gdrive.GDrive import GDrive  # ignore ImportError
