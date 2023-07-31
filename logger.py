@@ -18,5 +18,13 @@ log.basicConfig(
 log.getLogger().addHandler(log.StreamHandler(sys.stdout))
 
 
+def log_uncaught_exceptions(exctype, value, traceback):
+    log.exception("Uncaught exception",
+                  exc_info=(exctype, value, traceback))
+
+
+sys.excepthook = log_uncaught_exceptions
+
+
 def getLogger() -> log.Logger:
     return log
