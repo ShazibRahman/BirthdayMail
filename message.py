@@ -8,11 +8,20 @@ import sys
 import time
 from datetime import datetime, timedelta
 from email.message import EmailMessage
-from typing import Tuple
+from http import client
+from re import T
+from typing import Literal, Tuple
+
+from typing_extensions import deprecated
 
 from logger import getLogger
+from tele.telegram import Telegram
 from utils.csv_to_json import main as csv_to_json
+from utils.load_env import load_env
 from utils.time_it import timeit
+from utils.timeout_decorator import TimeoutError, timeout
+
+load_env()
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 # noinspection PyUnresolvedReferences
@@ -32,6 +41,7 @@ logging = getLogger()
 
 anacron_user = "Shazib_Anacron"
 FOLDER_NAME = "BirthDayMail"
+timeout_value = int(os.getenv("TIMEOUTVALUE"))
 
 
 def convert(seconds):
@@ -272,7 +282,7 @@ class BirthdayMail:
             return None
         if self.download():
             self.dates_done = json.load(
-                open(self.dates_done_path)
+                open(file=self.dates_done_path)
             )
             if current_date_withyear in self.dates_done:
                 logging.info(
@@ -295,12 +305,9 @@ class BirthdayMail:
 
         for val in self.bday:
             if current_time == val["date"]:
-                success_telegram = self.check_if_session_connection()
-                if not success_telegram:
-                    exit(0)
                 success = self.message_func(val)
                 if success:
-                    self.send_telegram()
+                    self.send_telegram(val['mobile'],val['name'])
                     logging.info(
                         f"email for date {val['date']} and email {val['mail']} has been sent"
                     )
@@ -381,7 +388,7 @@ class BirthdayMail:
             birthday_string, self.format_string_with_year)
         return birthday_, birthday_ - today
 
-    def git_command_failed_mail(self, body: str, subject: str = "Git Command Failed") -> None:
+    def telegram_session_error(self, body: str, subject: str = "session error") -> None:
         if ("Your branch is up to date" in body) or ("nothing to commit" in body):
             return
         message = EmailMessage()
@@ -406,12 +413,33 @@ class BirthdayMail:
         GDrive(FOLDER_NAME, logging).upload(self.data_path)
 
     @timeit
-    def check_if_session_connection(self):
+    @timeout(10)
+    @deprecated
+    def check_if_session_connection(self) -> Literal[True]:
         return True
 
+
     @timeit
-    def send_telegram(self):
-        return True
+    @timeout(timeout_value)
+
+    def send_telegram(self, chat_id, name):
+        error = False
+        logging.info("trying to send telegram message")
+        try:
+            with Telegram().client:
+                Telegram().message(chat_id, name)
+        except TimeoutError:
+            logging.error(f"sending message to {name} failed due to authentication timeout")
+            error = True
+            self.telegram_session_error(body="Telegram authentication failed",subject="please re-login again")
+        if not error:
+            self.logging.info(f"telegram message sent to {name}")
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
