@@ -8,8 +8,6 @@ import sys
 import time
 from datetime import datetime, timedelta
 from email.message import EmailMessage
-from http import client
-from re import T
 from typing import Literal, Tuple
 
 from typing_extensions import deprecated
