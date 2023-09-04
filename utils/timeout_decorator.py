@@ -6,6 +6,15 @@ class TimeoutError(Exception):
 
 
 def timeout(seconds):
+    """
+    Decorator to add a timeout to a function.
+
+    Parameters:
+        seconds (int): The number of seconds before the function times out.
+
+    Returns:
+        wrapper: The decorated function with a timeout.
+    """
     def decorator(func):
         def wrapper(*args, **kwargs):
             def handler(signum, frame):

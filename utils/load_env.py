@@ -16,7 +16,7 @@ class load_env:
             for line in env_file:
                 if line.strip() == "":
                     continue
-                key, value = line.strip().split("=")
+                key, value = line.strip().split(":=")
                 key, value = key.strip(), value.strip()
                 os.environ[key] = value
 

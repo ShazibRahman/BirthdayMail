@@ -2,14 +2,15 @@ import json
 import os
 import pathlib
 import sys
-import time
-from time import sleep
 
 #autopep8: off
 sys.path.append(pathlib.Path(__file__).parent.parent.resolve().as_posix())
 
+from utils.asymetrcilaEncryDecry import decrypt
 from utils.load_env import load_env
 from utils.timeout_decorator import TimeoutError, timeout
+
+load_env()
 
 try:
     from telethon.sync import TelegramClient
@@ -23,9 +24,6 @@ from logger import getLogger  # autopep8: off
 
 logging = getLogger()
 
-
-load_env()
-
 value: int = int(os.getenv("TIMEOUTVALUE"))
 
 def readJson(path: str):
@@ -33,8 +31,8 @@ def readJson(path: str):
         return json.load(f)
 
 
-telegram_client_secret = readJson(pathlib.Path(
-    __file__).parent.joinpath("client_secret.json").resolve().as_posix())
+# telegram_client_secret = readJson(pathlib.Path(
+#     __file__).parent.joinpath("client_secret.json").resolve().as_posix())
 
 MESSAGES: list[str] = readJson(pathlib.Path(__file__).parent.joinpath(
     "messages.json").resolve().as_posix())
@@ -60,11 +58,13 @@ class Telegram:
         if not self._initiated:
             self._initiated = True
             print(SESSSION_PATH)
+            api_id =  decrypt(os.environ.get("api_id"))
+            api_hash=  decrypt(os.environ.get("api_hash"))
 
             self.client = TelegramClient(
                 SESSSION_PATH,
-                telegram_client_secret["api_id"],
-                telegram_client_secret["api_hash"],
+                api_id,
+                api_hash,
             )
         else:
             print("Telegram instance already created")
@@ -73,7 +73,7 @@ class Telegram:
 
         message = get_message_randomly().format(name=name)
         logging.info(f"Sending message to {chat_id}")
-        self.client.start(telegram_client_secret["phone_number"])
+        self.client.start(os.environ.get("phone_number"))
         try:
             self.client.send_message(chat_id, message)
         except Exception as e:
@@ -85,20 +85,10 @@ class Telegram:
 # @timeout(value)
 def main():
     try:
-        ...
-    except Exception as e:
-        print(e)
-        try:
-            with Telegram().client:
-                Telegram().message("+917970502165", "Shazib")
-        except TimeoutError:
-            logging.info(f"took more than the timeout  {value=}")
-
-
-
-        print("here and after")
-
-        time.sleep(3)
-        print("waited for another 3 seconds")
+        with Telegram().client:
+            logging.info("I am here")
+            Telegram().message("+917970502165", "Shazib")
+    except TimeoutError:
+        logging.info(f"took more than the timeout  {value=}")
 if __name__ == "__main__":
     main()
