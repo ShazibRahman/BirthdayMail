@@ -1,0 +1,9 @@
+
+TIMEOUTVALUE := 10
+
+api_id := gAAAAABk9hUmPcIeyYSDG0ja_kvo_Q11r2wfrLyhRbTqGBOOt-DuuPOc64L83PiERNQ6fHL9Vq5ECid7RcziF7aLTUq4cR1cHw==
+
+api_hash := gAAAAABk9hVzPTnic7yC8_cqRfkPE3CMGr-6ILtwQrY0WIFUi90_zmwi8YkUbIvmdEiQGCTz9sqvEa4r0mO4QsJhrCJyqmxv1JLJs-x7wuhjrrVw1A5O9ecMXvy8jPN1YLRyPjXL-huE
+
+phone_number := +917970502165
+FOLDER_NAME := BirthDayMail

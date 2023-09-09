@@ -1,10 +1,14 @@
 import json
+import logging
 import os
 import pathlib
 import sys
 
+logger = logging.getLogger()
+
 #autopep8: off
 sys.path.append(pathlib.Path(__file__).parent.parent.resolve().as_posix())
+logger.info("telegram is being imported to the main package")
 
 from utils.asymetrcilaEncryDecry import decrypt
 from utils.load_env import load_env
@@ -20,21 +24,13 @@ except ImportError:
     os.system("pip install -r requirement.txt")
     from telethon.sync import TelegramClient
 
-from logger import getLogger  # autopep8: off
-
-logging = getLogger()
-
 value: int = int(os.getenv("TIMEOUTVALUE"))
 
 def readJson(path: str):
     with open(path, "r") as f:
         return json.load(f)
 
-
-# telegram_client_secret = readJson(pathlib.Path(
-#     __file__).parent.joinpath("client_secret.json").resolve().as_posix())
-
-MESSAGES: list[str] = readJson(pathlib.Path(__file__).parent.joinpath(
+MESSAGES: list[str] = readJson(path=pathlib.Path(__file__).parent.joinpath(
     "messages.json").resolve().as_posix())
 SESSSION_PATH = pathlib.Path(__file__).parent.joinpath("telegram.session").resolve().as_posix()
 
@@ -82,7 +78,7 @@ class Telegram:
 
             self.client.disconnect()
 
-# @timeout(value)
+@timeout(value)
 def main():
     try:
         with Telegram().client:
