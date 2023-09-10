@@ -1,5 +1,6 @@
 # autopep8: off
 import json
+import logging
 import os
 import random
 import smtplib
@@ -12,7 +13,7 @@ from typing import Literal, Tuple
 
 from typing_extensions import deprecated
 
-from logger import getLogger
+import logger
 from tele.telegram import Telegram
 from utils.csv_to_json import main as csv_to_json
 from utils.load_env import load_env
@@ -22,7 +23,6 @@ from utils.timeout_decorator import TimeoutError, timeout
 load_env()
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-# noinspection PyUnresolvedReferences
 from gdrive.GDrive import GDrive  # noqa: E402
 
 try:
@@ -35,7 +35,7 @@ except ImportError:
         os.system("pip3 install -r requirement.txt")
     from jinja2 import Template
 
-logging = getLogger()
+logger = logging.getLogger()
 
 anacron_user = "Shazib_Anacron"
 FOLDER_NAME = "BirthDayMail"

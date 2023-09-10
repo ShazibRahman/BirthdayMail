@@ -41,6 +41,10 @@ def get_message_randomly() -> str:
 
 
 class Telegram:
+    """
+    singleton class whose function is to create a telegram instance and send messsage to the chat 
+    wrote this syncronously to integrate better with the legacy code 
+    """
     _instance = None
 
     def __new__(cls):
