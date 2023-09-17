@@ -22,15 +22,13 @@ if __name__ == "__main__":
     from gdrive.GDrive import GDrive
     from sort_birthdays_json import main as sort_json
 else:
-    from gdrive.GDrive import GDrive  # ignore ImportError
+    from gdrive.GDrive import GDrive
 
     from utils.sort_birthdays_json import main as sort_json
 
 
 def csv_json(csv_path: str, json_path: str) -> None:
-    data: list = json.load(
-        open(json_path)
-    )
+    data: list = json.load(open(json_path))
     names = get_email(data)
     with open(csv_path, encoding="utf-8") as csvFile:
         csv_reader = csv.DictReader(csvFile)
@@ -47,7 +45,7 @@ def csv_json(csv_path: str, json_path: str) -> None:
                     day = "0" + day
                 info[DATE] = day + "-" + month
                 if rows[MOBILE_NUMBER] != "":
-                    info[MOBILE] = rows["+91"+MOBILE_NUMBER]
+                    info[MOBILE] = rows["+91" + MOBILE_NUMBER]
                 else:
                     info[MOBILE] = ""
                 data.append(info)
@@ -66,32 +64,29 @@ def main():
     gdrive = GDrive(FOLDER_NAME, log)
     mimetype = "text/csv"
     file_id = "1IGVrFmTQq-lePEaKWQxEzIAmYy8UwyXgQU0xqyQ3hzc"
-    file_path = pathlib.Path(__file__).parent.joinpath(
-        "Little Info (Responses).csv").resolve()
+    file_path = (
+        pathlib.Path(__file__).parent.joinpath("Little Info (Responses).csv").resolve()
+    )
     gdrive.download_by_id_and_file_format(file_path, file_id, mimetype)
 
     csv_json(
         file_path,
-         pathlib.Path(__file__).parent.parent.joinpath(
-            "data", "data.json").resolve()
-
+        pathlib.Path(__file__).parent.parent.joinpath("data", "data.json").resolve(),
     )
 
 
-
 if __name__ == "__main__":
-    data_file = pathlib.Path(__file__).parent.parent.joinpath(
-        "data", "data.json").resolve()
+    data_file = (
+        pathlib.Path(__file__).parent.parent.joinpath("data", "data.json").resolve()
+    )
     gdrive = GDrive(FOLDER_NAME, log)
     mimetype = "text/csv"
     gdrive.download(data_file)
     file_id = "1IGVrFmTQq-lePEaKWQxEzIAmYy8UwyXgQU0xqyQ3hzc"
-    file_path = pathlib.Path(__file__).parent.joinpath(
-        "Little Info (Responses).csv").resolve()
+    file_path = (
+        pathlib.Path(__file__).parent.joinpath("Little Info (Responses).csv").resolve()
+    )
     gdrive.download_by_id_and_file_format(file_path, file_id, mimetype)
 
-    csv_json(
-        file_path,
-        data_file
-    )
+    csv_json(file_path, data_file)
     gdrive.upload(data_file)

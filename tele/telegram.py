@@ -84,10 +84,15 @@ class Telegram:
 
 @timeout(value)
 def main():
+    logging.basicConfig(level=logging.INFO
+                       ,format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                       datefmt='%d-%b-%y %H:%M:%S',
+                       handlers=[logging.StreamHandler()],
+                       )
     try:
         with Telegram().client:
             logging.info("I am here")
-            Telegram().message("+917970502165", "Shazib")
+            Telegram().message("+91 7970502165", "Shaz NamiKaze")
     except TimeoutError:
         logging.info(f"took more than the timeout  {value=}")
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 import argparse
 import os
+import subprocess
 
 from logger import getLogger
 from message import BirthdayMail
@@ -10,7 +11,7 @@ logging = getLogger()
 
 
 def read_logs():
-    os.system(f"bat --paging=never {loggerPath}")
+    subprocess.run(["bat", "--paging=never", loggerPath])
 
 
 def clear_logs():

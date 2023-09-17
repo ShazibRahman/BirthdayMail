@@ -9,6 +9,7 @@ import sys
 import time
 from datetime import datetime, timedelta
 from email.message import EmailMessage
+from functools import lru_cache
 from typing import Literal, Tuple
 
 from typing_extensions import deprecated
@@ -289,7 +290,7 @@ class BirthdayMail:
                 return None
         current_time = current_date_time.strftime(self.format_string)
         self.download_read_csv_from_server_then_upload()
-        self.bday: dict = json.load(open(self.data_path))
+        self.bday: list(dict[str:str]) = json.load(open(self.data_path))
 
         prev_success = self.check_for_pending_and_send_message()
 
@@ -354,7 +355,7 @@ class BirthdayMail:
                 logging.info("--No Special occasion today")
 
     def get_all_bday_info(self, print_num: str = "a"):
-        self.bday: dict = json.load(
+        self.bday: list[dict[str:str]] = json.load(
             open(self.data_path))
         lis = []
         for val in self.bday:
@@ -397,6 +398,7 @@ class BirthdayMail:
         send_mail(self.sender_email, self.password, message)
 
     @timeit
+    @lru_cache(maxsize=2, typed=False)
     def download(self):
         return GDrive(FOLDER_NAME, logging).download(self.dates_done_path)
 
@@ -405,6 +407,7 @@ class BirthdayMail:
         return GDrive(FOLDER_NAME, logging).upload(self.dates_done_path)
 
     @timeit
+    @lru_cache(maxsize=2, typed=False)
     def download_read_csv_from_server_then_upload(self):
         GDrive(FOLDER_NAME, logging).download(self.data_path)
         csv_to_json()
@@ -434,17 +437,23 @@ class BirthdayMail:
             self.logging.info(f"telegram message sent to {name}")
 
 
+def main():
+        birthday = BirthdayMail()
 
+        if birthday.send_mail_from_json() is None:
+            logging.info("exiting")
+            exit(0)
+        birthday.send_email_special_occassions()
+        birthday.upload()
 
 
 
 
 
 if __name__ == "__main__":
-    birthday = BirthdayMail()
+    import cProfile
+    cProfile.run(statement="main()",sort="cumtime",filename="profile.out")
+    import pstats
+    p = pstats.Stats("profile.out")
+    p.sort_stats("cumtime").reverse_order().print_stats()
 
-    if birthday.send_mail_from_json() is None:
-        logging.info("exiting")
-        exit(0)
-    birthday.send_email_special_occassions()
-    birthday.upload()
