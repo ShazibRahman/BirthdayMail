@@ -19,12 +19,11 @@ MOBILE = "mobile"
 log = getLogger()
 if __name__ == "__main__":
 
-    from gdrive.GDrive import GDrive
     from sort_birthdays_json import main as sort_json
 else:
-    from gdrive.GDrive import GDrive
-
     from utils.sort_birthdays_json import main as sort_json
+
+from gdrive.GDrive import GDrive
 
 
 def csv_json(csv_path: str, json_path: str) -> None:
@@ -40,24 +39,18 @@ def csv_json(csv_path: str, json_path: str) -> None:
                 date_data = rows["birth date"].split("/")
                 month, day = date_data[0], date_data[1]
                 if len(month) == 1:
-                    month = "0" + month
+                    month = f"0{month}"
                 if len(day) == 1:
-                    day = "0" + day
-                info[DATE] = day + "-" + month
-                if rows[MOBILE_NUMBER] != "":
-                    info[MOBILE] = rows["+91" + MOBILE_NUMBER]
-                else:
-                    info[MOBILE] = ""
+                    day = f"0{day}"
+                info[DATE] = f"{day}-{month}"
+                info[MOBILE] = rows[f"+91{MOBILE_NUMBER}"] if rows[MOBILE_NUMBER] != "" else ""
                 data.append(info)
                 print(rows[EMAIL_ADDRESS], "added to the list")
     sort_json(data)
 
 
 def get_email(data) -> set:
-    names = set()
-    for i in data:
-        names.add(i[MAIL])
-    return names
+    return {i[MAIL] for i in data}
 
 
 def main():

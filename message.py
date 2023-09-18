@@ -69,10 +69,8 @@ def find_next_leap_year(year: int) -> int:
         return year + 4
     elif year % 4 != 0:
         return year + year % 4
-    elif year % 4 == 0 and year % 100 == 0 or year % 400 != 0:
-        return year + 4
     else:
-        return year
+        return year + 4
 
 
 def is_leap_year(year: int) -> bool:
@@ -80,12 +78,7 @@ def is_leap_year(year: int) -> bool:
 
 
 def is_greater(day1: int, month1: int, day2: int, month2: int) -> bool:
-    if month1 > month2:
-        return True
-    elif month1 == month2 and day1 > day2:
-        return True
-    else:
-        return False
+    return month1 > month2 or month1 == month2 and day1 > day2
 
 
 @timeit
@@ -98,7 +91,7 @@ def send_mail(sender_email: str, password: str, message: EmailMessage):
             server.send_message(message)
             logging.info(f"---Mail sent to {message['To']}---")
     except Exception as e:
-        logging.error("---Network Error---" + str(e))
+        logging.error(f"---Network Error---{str(e)}")
         return False
     return True
 
@@ -224,44 +217,41 @@ class BirthdayMail:
 
         if last_run_datetime == current_datetime - timedelta(1):
             return True
-        else:
-            last_run = last_run_datetime + timedelta(1)
-            last_run_set: set[str] = set()
-            last_run_with_year_set = set()
+        last_run = last_run_datetime + timedelta(1)
+        last_run_set: set[str] = set()
+        last_run_with_year_set = set()
 
-            while last_run < current_datetime:
-                last_run_string = last_run.strftime(self.format_string)
-                last_run_set.add(last_run_string)
-                last_run_with_year_set.add(
-                    last_run.strftime(self.format_string_with_year)
+        while last_run < current_datetime:
+            last_run_string = last_run.strftime(self.format_string)
+            last_run_set.add(last_run_string)
+            last_run_with_year_set.add(
+                last_run.strftime(self.format_string_with_year)
+            )
+            last_run = last_run + timedelta(1)
+
+        dates_list = [
+            datetime.strptime(x, self.format_string).strftime(
+                self.format_late_mail_date
+            )
+            for x in last_run_set
+        ]
+
+        logging.info(f"--trying to send backlog emails for {dates_list=}")
+
+        for val in self.bday:
+            if val["date"] in last_run_set:
+                logging.info(
+                    f"--trying backlog mail dated={val['date']} for email={val['mail']}")
+                if not (success := self.message_func(val, True)): # might use success variable in future # TODO
+                    return False
+                self.send_telegram()
+                logging.info(
+                    f"Backlog email for date {val['date']} and email {val['mail']} has been sent"
                 )
-                last_run = last_run + timedelta(1)
 
-            dates_list = [
-                datetime.strptime(x, self.format_string).strftime(
-                    self.format_late_mail_date
-                )
-                for x in last_run_set
-            ]
-
-            logging.info(f"--trying to send backlog emails for {dates_list=}")
-
-            for val in self.bday:
-                if val["date"] in last_run_set:
-                    logging.info(
-                        f"--trying backlog mail dated={val['date']} for email={val['mail']}")
-                    success = self.message_func(val, True)
-                    if success:
-                        self.send_telegram()
-                        logging.info(
-                            f"Backlog email for date {val['date']} and email {val['mail']} has been sent"
-                        )
-
-                    else:
-                        return False
-            for i in last_run_with_year_set:
-                self.dates_done.append(i)
-                modified_dates_file = True
+        for i in last_run_with_year_set:
+            self.dates_done.append(i)
+            modified_dates_file = True
 
         if modified_dates_file:
             self.sort_date_dones_files()
@@ -381,8 +371,7 @@ class BirthdayMail:
             self, birthday_string: str
     ) -> tuple[datetime, timedelta]:
         today = datetime.now()
-        birthday_string = birthday_string + "-" + \
-                          str(next_birth_year(birthday_string))
+        birthday_string = f"{birthday_string}-{str(next_birth_year(birthday_string))}"
         birthday_ = datetime.strptime(
             birthday_string, self.format_string_with_year)
         return birthday_, birthday_ - today

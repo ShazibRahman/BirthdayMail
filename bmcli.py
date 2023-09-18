@@ -19,12 +19,13 @@ def clear_logs():
 
 
 def cli_method():
-    if args.logs and args.logs == "show":
-        read_logs()
-        return
-    if args.logs and args.logs == "clear":
-        clear_logs()
-        return
+    if args.logs:
+        if args.logs == "show":
+            read_logs()
+            return
+        if args.logs == "clear":
+            clear_logs()
+            return
     if args.logs is None and args.b is None and args.s is None:
         read_logs()
         return
