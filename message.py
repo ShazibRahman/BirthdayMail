@@ -12,8 +12,6 @@ from email.message import EmailMessage
 from functools import lru_cache
 from typing import Literal, Tuple
 
-from typing_extensions import deprecated
-
 import logger
 from tele.telegram import Telegram
 from utils.csv_to_json import main as csv_to_json
@@ -404,7 +402,7 @@ class BirthdayMail:
 
     @timeit
     @timeout(10)
-    @deprecated
+    @DeprecationWarning
     def check_if_session_connection(self) -> Literal[True]:
         return True
 

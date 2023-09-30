@@ -36,8 +36,8 @@ SESSSION_PATH = pathlib.Path(__file__).parent.joinpath("telegram.session").resol
 
 
 def get_message_randomly() -> str:
-    import random
-    return random.choice(MESSAGES)
+    from random import choice
+    return choice(MESSAGES)
 
 
 class Telegram:
