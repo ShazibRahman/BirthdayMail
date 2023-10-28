@@ -1,4 +1,6 @@
-# autopep8: off
+# autopep8: off 
+
+# pylint: disable=logging-fstring-interpolation,redefined-builtin,missing-function-docstring,unused-argument,unused-import
 import json
 import logging
 import os
@@ -51,14 +53,14 @@ def render_template(template: Template, context: dict):
 
 @timeit
 def save_jsonto_file(file_name: str, data: list, indent: int = 4) -> None:
-    with open(file_name, "w") as f:
+    with open(file_name, "w",encoding="utf-8") as f:
         json.dump(data, f, indent=indent)
     logging.info(f"write changes to {file_name=}")
 
 
 @timeit
 def read_json_to_py_objecy(file_name: str):
-    with open(file_name) as f:
+    with open(file_name,encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -239,10 +241,10 @@ class BirthdayMail:
         for val in self.bday:
             if val["date"] in last_run_set:
                 logging.info(
-                    f"--trying backlog mail dated={val['date']} for email={val['mail']}")
-                if not (success := self.message_func(val, True)): # might use success variable in future # TODO
+                    f"--trying backlog mail dated={val['date']} for email={val['mail']}") 
+                if not (success := self.message_func(val, True)):
                     return False
-                self.send_telegram()
+                self.send_telegram(val["mobile"],val['name'])
                 logging.info(
                     f"Backlog email for date {val['date']} and email {val['mail']} has been sent"
                 )
