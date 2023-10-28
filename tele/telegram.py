@@ -1,14 +1,18 @@
+# pylint: disable=logging-fstring-interpolation,redefined-builtin,missing-function-docstring,unused-argument,unused-import , broad-exception-caught , wrong-import-order , wrong-import-position , missing-module-docstring
 import json
 import logging
 import os
 import pathlib
 import sys
+from random import choice
 
 logger = logging.getLogger()
 
 #autopep8: off
 sys.path.append(pathlib.Path(__file__).parent.parent.resolve().as_posix())
 logger.info("telegram is being imported to the main package")
+
+
 
 from utils.asymetrcilaEncryDecry import decrypt
 from utils.load_env import load_env
@@ -27,7 +31,7 @@ except ImportError:
 value: int = int(os.getenv("TIMEOUTVALUE"))
 
 def readJson(path: str):
-    with open(path, "r") as f:
+    with open(path, "r",encoding="utf-8") as f:
         return json.load(f)
 
 MESSAGES: list[str] = readJson(path=pathlib.Path(__file__).parent.joinpath(
@@ -36,7 +40,6 @@ SESSSION_PATH = pathlib.Path(__file__).parent.joinpath("telegram.session").resol
 
 
 def get_message_randomly() -> str:
-    from random import choice
     return choice(MESSAGES)
 
 

@@ -1,6 +1,5 @@
-# autopep8: off 
-
-# pylint: disable=logging-fstring-interpolation,redefined-builtin,missing-function-docstring,unused-argument,unused-import
+# autopep8: off
+# pylint: disable=logging-fstring-interpolation,redefined-builtin,missing-function-docstring,unused-argument,unused-import , broad-exception-caught , wrong-import-order , wrong-import-position , missing-module-docstring
 import json
 import logging
 import os
@@ -24,7 +23,7 @@ from utils.timeout_decorator import TimeoutError, timeout
 load_env()
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from gdrive.GDrive import GDrive  # noqa: E402
+from gdrive.GDrive import GDrive  # pytlint : disable =  wrong-import-oder
 
 try:
     from jinja2 import Template
@@ -38,7 +37,6 @@ except ImportError:
 
 logger = logging.getLogger()
 
-anacron_user = "Shazib_Anacron"
 FOLDER_NAME = "BirthDayMail"
 timeout_value = int(os.getenv("TIMEOUTVALUE"))
 
@@ -114,6 +112,13 @@ def next_birth_year(birthday_string: str) -> int:
 
 class BirthdayMail:
     def __init__(self) -> None:
+        """
+        Initializes the class and sets up the necessary instance variables.
+
+        :param None
+
+        :return None
+        """
 
         self.occasions = None
         self.bday = None
@@ -147,7 +152,7 @@ class BirthdayMail:
             self.directory_string, "templates", occasion["template"]
         )
 
-        self.template_to_render = Template(open(template_filename).read())
+        self.template_to_render = Template(open(template_filename ,encoding="utf-8").read())
         context_template = render_template(self.template_to_render, {})
         if len(occasion["peopleToGreet"]) <= 0:
             logging.info(
@@ -164,7 +169,8 @@ class BirthdayMail:
             message.set_content(context_template, subtype="html")
             if send_mail(self.sender_email, self.password, message):
                 logging.info(
-                    f"The email has been sent to {person['name']} with email {person['mail']} using template {occasion['template']}"
+                    f"""The email has been sent to {person['name']} 
+                    with email {person['mail']} using template {occasion['template']}"""
                 )
 
             # occasion["peopleToGreet"].remove(person) it is not very good to remove the person from the list that is
@@ -187,7 +193,7 @@ class BirthdayMail:
             template_name = random.choice(template_list)
         self.template_filename = os.path.join(
             self.directory_string, "templates", template_name)
-        self.template_to_render = Template(open(self.template_filename).read())
+        self.template_to_render = Template(open(self.template_filename,encoding="utf-8").read())
         context_template = render_template(
             self.template_to_render, {"name": name})
 
@@ -242,9 +248,15 @@ class BirthdayMail:
             if val["date"] in last_run_set:
                 logging.info(
                     f"--trying backlog mail dated={val['date']} for email={val['mail']}") 
-                if not (success := self.message_func(val, True)):
+                if not (self.message_func(val, True)):
+                    logging.info(
+                        f"Backlog email for date {val['date']} and email {val['mail']} has failed"
+                    )
                     return False
-                self.send_telegram(val["mobile"],val['name'])
+                try:
+                    self.send_telegram(val["mobile"],val['name'])
+                except Exception as e:
+                    logging.info("telegram messaged failed due to %s ",str(e))
                 logging.info(
                     f"Backlog email for date {val['date']} and email {val['mail']} has been sent"
                 )
@@ -261,7 +273,7 @@ class BirthdayMail:
     @timeit
     def send_mail_from_json(self):
         self.dates_done: list[str] = json.load(
-            open(self.dates_done_path)
+            open(self.dates_done_path,encoding="utf-8")
         )
         current_date_time, current_date_withyear = self.get_current_date()
         if current_date_withyear in self.dates_done:
@@ -271,7 +283,7 @@ class BirthdayMail:
             return None
         if self.download():
             self.dates_done = json.load(
-                open(file=self.dates_done_path)
+                open(file=self.dates_done_path,encoding="utf-8")
             )
             if current_date_withyear in self.dates_done:
                 logging.info(
@@ -280,7 +292,7 @@ class BirthdayMail:
                 return None
         current_time = current_date_time.strftime(self.format_string)
         self.download_read_csv_from_server_then_upload()
-        self.bday: list(dict[str:str]) = json.load(open(self.data_path))
+        self.bday: list(dict[str:str]) = json.load(open(self.data_path,encoding="utf-8"))
 
         prev_success = self.check_for_pending_and_send_message()
 
@@ -334,10 +346,11 @@ class BirthdayMail:
         _, current_date_withyear = self.get_current_date()
 
         self.occasions: list = json.load(
-            open(self.occasion_path))
+            open(self.occasion_path,encoding="utf-8"))
 
         for occasion in self.occasions:
-            if current_date_withyear == occasion["date"] or ('sent' in occasion and not occasion["sent"]):
+            if current_date_withyear == occasion["date"] or  \
+            ('sent' in occasion and not occasion["sent"]):
                 self.send_email_on_special_occasion(occasion)
                 occasion["sent"] = True
                 save_jsonto_file(self.occasion_path, self.occasions)
@@ -346,7 +359,7 @@ class BirthdayMail:
 
     def get_all_bday_info(self, print_num: str = "a"):
         self.bday: list[dict[str:str]] = json.load(
-            open(self.data_path))
+            open(self.data_path,encoding="utf-8"))
         lis = []
         for val in self.bday:
             next_birthday, diff_datetime = self.count_down_for_birthday(
@@ -421,19 +434,22 @@ class BirthdayMail:
         except TimeoutError:
             logging.error(f"sending message to {name} failed due to authentication timeout")
             error = True
-            self.telegram_session_error(body="Telegram authentication failed",subject="please re-login again")
+            self.telegram_session_error(
+                body="Telegram authentication failed",
+                subject="please re-login again"
+                )
         if not error:
             self.logging.info(f"telegram message sent to {name}")
 
 
 def main():
-        birthday = BirthdayMail()
+    birthday = BirthdayMail()
 
-        if birthday.send_mail_from_json() is None:
-            logging.info("exiting")
-            exit(0)
-        birthday.send_email_special_occassions()
-        birthday.upload()
+    if birthday.send_mail_from_json() is None:
+        logging.info("exiting")
+        sys.exit(0)
+    birthday.send_email_special_occassions()
+    birthday.upload()
 
 
 
