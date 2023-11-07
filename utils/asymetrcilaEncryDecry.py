@@ -14,6 +14,9 @@ def get_key():
     Returns:
         bytes: The encryption key encoded in UTF-8.
     """
+    if os.getenv("client_ency_key") is None or os.getenv("client_ency_key") == "":
+        raise ValueError("client_ency_key is not set")
+
     return os.getenv("client_ency_key").encode("utf-8")
 
 

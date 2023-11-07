@@ -1,11 +1,10 @@
 import json
-import os
 import pathlib
 from rich.console import Console
+
 console = Console()
 
-data_path = pathlib.Path(
-    __file__).parent.parent.joinpath("data", "data.json")
+data_path = pathlib.Path(__file__).parent.parent.joinpath("data", "data.json")
 
 
 def sort_birthdays_object_on_key(birthdays: list, key: str) -> list:
@@ -14,8 +13,7 @@ def sort_birthdays_object_on_key(birthdays: list, key: str) -> list:
     """
     console.log("Sorting birthdays")
     return sorted(
-        birthdays, key=lambda x: x[key].split(
-            "-")[1] + "-" + x[key].split("-")[0]
+        birthdays, key=lambda x: x[key].split("-")[1] + "-" + x[key].split("-")[0]
     )
 
 

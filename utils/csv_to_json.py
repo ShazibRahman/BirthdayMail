@@ -1,13 +1,12 @@
 import csv
 import json
-import logging
 import os
 import pathlib
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-from logger import getLogger  # autopep8: off
+from logger import getLogger  # autopep8: off  # noqa: E402
 
 EMAIL_ADDRESS = "Email Address"
 DATE = "date"
@@ -18,7 +17,6 @@ FOLDER_NAME = "BirthDayMail"
 MOBILE = "mobile"
 log = getLogger()
 if __name__ == "__main__":
-
     from sort_birthdays_json import main as sort_json
 else:
     from utils.sort_birthdays_json import main as sort_json
@@ -43,7 +41,9 @@ def csv_json(csv_path: str, json_path: str) -> None:
                 if len(day) == 1:
                     day = f"0{day}"
                 info[DATE] = f"{day}-{month}"
-                info[MOBILE] = rows[f"+91{MOBILE_NUMBER}"] if rows[MOBILE_NUMBER] != "" else ""
+                info[MOBILE] = (
+                    rows[f"+91{MOBILE_NUMBER}"] if rows[MOBILE_NUMBER] != "" else ""
+                )
                 data.append(info)
                 print(rows[EMAIL_ADDRESS], "added to the list")
     sort_json(data)

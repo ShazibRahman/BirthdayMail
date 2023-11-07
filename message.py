@@ -51,14 +51,14 @@ def render_template(template: Template, context: dict):
 
 @timeit
 def save_jsonto_file(file_name: str, data: list, indent: int = 4) -> None:
-    with open(file_name, "w",encoding="utf-8") as f:
+    with open(file_name, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=indent)
     logging.info(f"write changes to {file_name=}")
 
 
 @timeit
 def read_json_to_py_objecy(file_name: str):
-    with open(file_name,encoding="utf-8") as f:
+    with open(file_name, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -133,35 +133,33 @@ class BirthdayMail:
         self.password: str = os.environ.get("shazPassword")  # type: ignore
         user = os.environ.get("USER")
 
-        logging.info(
-            f"--logged in as {user=}"
-        )
+        logging.info(f"--logged in as {user=}")
 
         self.format_string = "%d-%m"
         self.format_string_with_year = "%d-%m-%Y"
         self.format_late_mail_date = "%d-%b"
-        self.occasion_path = os.path.join(self.directory_string, "data",
-                                          "occasions.json")
-        self.data_path = os.path.join(
-            self.directory_string, "data", "data.json")
-        self.dates_done_path = os.path.join(self.directory_string, "data",
-                                            "dates.json")
+        self.occasion_path = os.path.join(
+            self.directory_string, "data", "occasions.json"
+        )
+        self.data_path = os.path.join(self.directory_string, "data", "data.json")
+        self.dates_done_path = os.path.join(self.directory_string, "data", "dates.json")
 
     def send_email_on_special_occasion(self, occasion: dict):
         template_filename = os.path.join(
             self.directory_string, "templates", occasion["template"]
         )
 
-        self.template_to_render = Template(open(template_filename ,encoding="utf-8").read())
+        self.template_to_render = Template(
+            open(template_filename, encoding="utf-8").read()
+        )
         context_template = render_template(self.template_to_render, {})
         if len(occasion["peopleToGreet"]) <= 0:
-            logging.info(
-                f"No Person is found in the occasions {occasion['name']}")
+            logging.info(f"No Person is found in the occasions {occasion['name']}")
 
         for person in occasion["peopleToGreet"]:
             message = EmailMessage()
             message["Subject"] = (
-                    occasion["subject"] + " " + person["name"].split("(")[0] + "!"
+                occasion["subject"] + " " + person["name"].split("(")[0] + "!"
             )
             message["From"] = self.sender_email
             message["To"] = person["mail"]
@@ -187,22 +185,21 @@ class BirthdayMail:
         if pending_mail:
             template_name = "late.html"
         else:
-            template_list = ["template_3.html",
-                             "template_2.html",
-                             "template_1.html"]
+            template_list = ["template_3.html", "template_2.html", "template_1.html"]
             template_name = random.choice(template_list)
         self.template_filename = os.path.join(
-            self.directory_string, "templates", template_name)
-        self.template_to_render = Template(open(self.template_filename,encoding="utf-8").read())
-        context_template = render_template(
-            self.template_to_render, {"name": name})
+            self.directory_string, "templates", template_name
+        )
+        self.template_to_render = Template(
+            open(self.template_filename, encoding="utf-8").read()
+        )
+        context_template = render_template(self.template_to_render, {"name": name})
 
         message.set_content(context_template, subtype="html")
         return send_mail(self.sender_email, self.password, message)
 
     @timeit
     def check_for_pending_and_send_message(self):
-
         if not self.dates_done or len(self.dates_done) <= 0:
             logging.info("--No Previous date found--")
             return True
@@ -230,9 +227,7 @@ class BirthdayMail:
         while last_run < current_datetime:
             last_run_string = last_run.strftime(self.format_string)
             last_run_set.add(last_run_string)
-            last_run_with_year_set.add(
-                last_run.strftime(self.format_string_with_year)
-            )
+            last_run_with_year_set.add(last_run.strftime(self.format_string_with_year))
             last_run = last_run + timedelta(1)
 
         dates_list = [
@@ -247,16 +242,17 @@ class BirthdayMail:
         for val in self.bday:
             if val["date"] in last_run_set:
                 logging.info(
-                    f"--trying backlog mail dated={val['date']} for email={val['mail']}") 
+                    f"--trying backlog mail dated={val['date']} for email={val['mail']}"
+                )
                 if not (self.message_func(val, True)):
                     logging.info(
                         f"Backlog email for date {val['date']} and email {val['mail']} has failed"
                     )
                     return False
                 try:
-                    self.send_telegram(val["mobile"],val['name'])
+                    self.send_telegram(val["mobile"], val["name"])
                 except Exception as e:
-                    logging.info("telegram messaged failed due to %s ",str(e))
+                    logging.info("telegram messaged failed due to %s ", str(e))
                 logging.info(
                     f"Backlog email for date {val['date']} and email {val['mail']} has been sent"
                 )
@@ -273,7 +269,7 @@ class BirthdayMail:
     @timeit
     def send_mail_from_json(self):
         self.dates_done: list[str] = json.load(
-            open(self.dates_done_path,encoding="utf-8")
+            open(self.dates_done_path, encoding="utf-8")
         )
         current_date_time, current_date_withyear = self.get_current_date()
         if current_date_withyear in self.dates_done:
@@ -283,7 +279,7 @@ class BirthdayMail:
             return None
         if self.download():
             self.dates_done = json.load(
-                open(file=self.dates_done_path,encoding="utf-8")
+                open(file=self.dates_done_path, encoding="utf-8")
             )
             if current_date_withyear in self.dates_done:
                 logging.info(
@@ -292,7 +288,9 @@ class BirthdayMail:
                 return None
         current_time = current_date_time.strftime(self.format_string)
         self.download_read_csv_from_server_then_upload()
-        self.bday: list(dict[str:str]) = json.load(open(self.data_path,encoding="utf-8"))
+        self.bday: list(dict[str:str]) = json.load(
+            open(self.data_path, encoding="utf-8")
+        )
 
         prev_success = self.check_for_pending_and_send_message()
 
@@ -308,7 +306,7 @@ class BirthdayMail:
             if current_time == val["date"]:
                 success = self.message_func(val)
                 if success:
-                    self.send_telegram(val['mobile'],val['name'])
+                    self.send_telegram(val["mobile"], val["name"])
                     logging.info(
                         f"email for date {val['date']} and email {val['mail']} has been sent"
                     )
@@ -330,8 +328,7 @@ class BirthdayMail:
 
     def get_current_date(self) -> Tuple[datetime, str]:
         current_date_time = datetime.now()
-        current_date_withyear = current_date_time.strftime(
-            self.format_string_with_year)
+        current_date_withyear = current_date_time.strftime(self.format_string_with_year)
 
         return current_date_time, current_date_withyear
 
@@ -345,12 +342,12 @@ class BirthdayMail:
     def send_email_special_occassions(self):
         _, current_date_withyear = self.get_current_date()
 
-        self.occasions: list = json.load(
-            open(self.occasion_path,encoding="utf-8"))
+        self.occasions: list = json.load(open(self.occasion_path, encoding="utf-8"))
 
         for occasion in self.occasions:
-            if current_date_withyear == occasion["date"] or  \
-            ('sent' in occasion and not occasion["sent"]):
+            if current_date_withyear == occasion["date"] or (
+                "sent" in occasion and not occasion["sent"]
+            ):
                 self.send_email_on_special_occasion(occasion)
                 occasion["sent"] = True
                 save_jsonto_file(self.occasion_path, self.occasions)
@@ -359,34 +356,31 @@ class BirthdayMail:
 
     def get_all_bday_info(self, print_num: str = "a"):
         self.bday: list[dict[str:str]] = json.load(
-            open(self.data_path,encoding="utf-8"))
+            open(self.data_path, encoding="utf-8")
+        )
         lis = []
         for val in self.bday:
-            next_birthday, diff_datetime = self.count_down_for_birthday(
-                val["date"])
+            next_birthday, diff_datetime = self.count_down_for_birthday(val["date"])
 
-            parse_date_to_look_good = datetime.strftime(
-                next_birthday, "%d %b %Y")
+            parse_date_to_look_good = datetime.strftime(next_birthday, "%d %b %Y")
             days_rem_mes = f"{diff_datetime.days} days {convert(diff_datetime.seconds)}"
 
             lis.append(
-                [diff_datetime.days, val["name"],
-                 parse_date_to_look_good, days_rem_mes]
+                [diff_datetime.days, val["name"], parse_date_to_look_good, days_rem_mes]
             )
         lis.sort()
         if print_num != "a":
-            lis = lis[:int(print_num)]
+            lis = lis[: int(print_num)]
 
         for _, i, j, k in lis:
             print(i, j, k, end="\n\n", sep="\n")
 
     def count_down_for_birthday(
-            self, birthday_string: str
+        self, birthday_string: str
     ) -> tuple[datetime, timedelta]:
         today = datetime.now()
         birthday_string = f"{birthday_string}-{str(next_birth_year(birthday_string))}"
-        birthday_ = datetime.strptime(
-            birthday_string, self.format_string_with_year)
+        birthday_ = datetime.strptime(birthday_string, self.format_string_with_year)
         return birthday_, birthday_ - today
 
     def telegram_session_error(self, body: str, subject: str = "session error") -> None:
@@ -421,10 +415,8 @@ class BirthdayMail:
     def check_if_session_connection(self) -> Literal[True]:
         return True
 
-
     @timeit
     @timeout(timeout_value)
-
     def send_telegram(self, chat_id, name):
         error = False
         logging.info("trying to send telegram message")
@@ -432,12 +424,13 @@ class BirthdayMail:
             with Telegram().client:
                 Telegram().message(chat_id, name)
         except TimeoutError:
-            logging.error(f"sending message to {name} failed due to authentication timeout")
+            logging.error(
+                f"sending message to {name} failed due to authentication timeout"
+            )
             error = True
             self.telegram_session_error(
-                body="Telegram authentication failed",
-                subject="please re-login again"
-                )
+                body="Telegram authentication failed", subject="please re-login again"
+            )
         if not error:
             self.logging.info(f"telegram message sent to {name}")
 
@@ -452,13 +445,11 @@ def main():
     birthday.upload()
 
 
-
-
-
 if __name__ == "__main__":
     import cProfile
-    cProfile.run(statement="main()",sort="cumtime",filename="profile.out")
+
+    cProfile.run(statement="main()", sort="cumtime", filename="profile.out")
     import pstats
+
     p = pstats.Stats("profile.out")
     p.sort_stats("cumtime").reverse_order().print_stats()
-

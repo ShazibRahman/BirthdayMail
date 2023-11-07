@@ -15,11 +15,11 @@ def timeout(seconds):
     Returns:
         wrapper: The decorated function with a timeout.
     """
+
     def decorator(func):
         def wrapper(*args, **kwargs):
             def handler(signum, frame):
-                raise TimeoutError(
-                    "Function execution exceeded the specified timeout.")
+                raise TimeoutError("Function execution exceeded the specified timeout.")
 
             # Set up a signal handler to raise TimeoutError if the timeout is reached
             signal.signal(signal.SIGALRM, handler)

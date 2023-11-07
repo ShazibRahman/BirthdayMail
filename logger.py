@@ -2,8 +2,7 @@ import logging as log
 import pathlib
 import sys
 
-logger_path = pathlib.Path(__file__).parent.joinpath(
-    "data", "logger.log").resolve()
+logger_path = pathlib.Path(__file__).parent.joinpath("data", "logger.log").resolve()
 
 if not pathlib.Path.exists(logger_path):
     open(logger_path, "w").close()
@@ -19,8 +18,7 @@ log.getLogger().addHandler(log.StreamHandler(sys.stdout))
 
 
 def log_uncaught_exceptions(exctype, value, traceback):
-    log.exception("Uncaught exception",
-                  exc_info=(exctype, value, traceback))
+    log.exception("Uncaught exception", exc_info=(exctype, value, traceback))
 
 
 sys.excepthook = log_uncaught_exceptions
