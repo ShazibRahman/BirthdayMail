@@ -78,9 +78,12 @@ class Telegram:
             print("Telegram instance already created")
 
     def message(self, chat_id: str, name: str) -> None:
+        if chat_id is None or chat_id == "":
+            logging.error("chat id is empty")
+            return
         message = get_message_randomly().format(name=name)
         logging.info(f"Sending message to {chat_id}")
-        self.client.start(os.environ.get("phone_number"))
+        self.client.start(os.environ["phone_number"])
         try:
             self.client.send_message(chat_id, message)
         except Exception as e:

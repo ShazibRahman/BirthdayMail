@@ -10,24 +10,52 @@ loggerPath = os.path.join(os.path.dirname(__file__), "data", "logger.log")
 logging = getLogger()
 
 
-def read_logs():
-    subprocess.run(["bat", "--paging=never", loggerPath])
+def read_logs(logger_path: str) -> None:
+    """
+    Read logs from a specified logger path.
+
+    Args:
+        logger_path (str): The path to the logger file.
+
+    Returns:
+        None
+    """
+    subprocess.run(["bat", "--paging=never", logger_path])
 
 
 def clear_logs():
-    open(loggerPath, "w").close()
+    with open(loggerPath, "w",encoding="utf-8") as file:
+        file.truncate()
 
 
-def cli_method():
+def cli_method(args):
+    """
+    Generates the function comment for the given function body in a markdown code block with the correct language syntax.
+
+    Args:
+        args (object): The command-line arguments.
+
+    Returns:
+        None: If the `args.logs` is "show" or "clear".
+        None: If `args.logs` is None and `args.b` and `args.s` are also None.
+        None: If `args.s` is "y" and `birthday.send_mail_from_json()` returns None.
+        None: If `args.b` is not None and not an empty string.
+
+    Raises:
+        None.
+
+    Side Effects:
+        Calls various functions based on the value of `args.logs` and `args.s`.
+    """
     if args.logs:
         if args.logs == "show":
-            read_logs()
+            read_logs(logger_path=loggerPath)
             return
         if args.logs == "clear":
             clear_logs()
             return
     if args.logs is None and args.b is None and args.s is None:
-        read_logs()
+        read_logs(logger_path=loggerPath)
         return
     birthday = BirthdayMail()
 
@@ -51,5 +79,5 @@ if __name__ == "__main__":
     parser.add_argument("--logs", type=str, choices=["show", "clear"])
     parser.add_argument("-b", type=str)
     parser.add_argument("-s", type=str, choices=["y", "n"])
-    args = parser.parse_args()
-    cli_method()
+    arg = parser.parse_args()
+    cli_method(arg)
