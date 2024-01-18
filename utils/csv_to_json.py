@@ -49,7 +49,9 @@ def csv_json(csv_path: str, json_path: str) -> None:
     sort_json(data)
 
 
-def get_email(data) -> set:
+from typing import List
+
+def get_email(data: List[dict]) -> set:
     return {i[MAIL] for i in data}
 
 
