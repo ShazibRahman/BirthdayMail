@@ -58,11 +58,15 @@ def cli_method(args):
     if args.logs is None and args.b is None and args.s is None:
         read_logs(logger_path=loggerPath)
         return
+
+    birthday = BirthdayMail()
+
+    if args.b is not None and args.b != "":
+        birthday.get_all_bday_info(args.b)
+        return
     if not check_internet_connection():
         logging.error("No internet connection")
         return
-    birthday = BirthdayMail()
-
     if args.s == "y":
         if birthday.send_mail_from_json() is None:
             logging.info("Exiting...")
@@ -71,10 +75,6 @@ def cli_method(args):
         birthday.send_email_special_occassions()
         birthday.upload()
 
-        return
-
-    if args.b is not None and args.b != "":
-        birthday.get_all_bday_info(args.b)
         return
 
 
