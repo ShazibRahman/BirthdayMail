@@ -184,11 +184,15 @@ class BirthdayMail:
 
         if pending_mail:
             template_name = "late.html"
+            self.template_filename = os.path.join(
+                self.directory_string, "templates", template_name
+            )
         else:
-            template_list = ["template_3.html", "template_2.html", "template_1.html"]
+            template_list = os.listdir(os.path.join(self.directory_string, "templates","bday_templates"))
+            random.shuffle(template_list)
             template_name = random.choice(template_list)
         self.template_filename = os.path.join(
-            self.directory_string, "templates", template_name
+            self.directory_string, "templates", "bday_templates",template_name
         )
         self.template_to_render = Template(
             open(self.template_filename, encoding="utf-8").read()
