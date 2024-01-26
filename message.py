@@ -13,16 +13,17 @@ from email.message import EmailMessage
 from functools import lru_cache
 from typing import Literal, Tuple
 
-import logger
 from tele.telegram import Telegram
 from utils.csv_to_json import main as csv_to_json
 from utils.load_env import load_env
 from utils.time_it import timeit
 from utils.timeout_decorator import TimeoutError, timeout
+from utils.DesktopNotification import DesktopNotification
 
 load_env()
+print(sys.path)
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+# sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from gdrive.GDrive import GDrive  # pytlint : disable =  wrong-import-oder
 
 try:
@@ -260,6 +261,9 @@ class BirthdayMail:
                 logging.info(
                     f"Backlog email for date {val['date']} and email {val['mail']} has been sent"
                 )
+                DesktopNotification(
+                    "Happy Birthday", f"Backlog email and telegram message for {val['name']} has been sent"
+                )
 
         for i in last_run_with_year_set:
             self.dates_done.append(i)
@@ -314,6 +318,10 @@ class BirthdayMail:
                     logging.info(
                         f"email for date {val['date']} and email {val['mail']} has been sent"
                     )
+                    DesktopNotification(
+                        "Happy Birthday", f"email for {val['name']} has been sent"
+                    )
+
                 match = True
 
         if match and success:
@@ -445,7 +453,7 @@ def main():
     if birthday.send_mail_from_json() is None:
         logging.info("exiting")
         sys.exit(0)
-    birthday.send_email_special_occassions()
+    # birthday.send_email_special_occassions()
     birthday.upload()
 
 

@@ -4,3 +4,4 @@ PyDrive==1.3.1
 Telethon==1.28.5
 pytest
 cryptography
+plyer==2.1.0
