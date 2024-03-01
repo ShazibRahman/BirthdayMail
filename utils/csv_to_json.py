@@ -46,12 +46,11 @@ def csv_json(csv_path: str, json_path: str) -> None:
                 )
                 data.append(info)
                 print(rows[EMAIL_ADDRESS], "added to the list")
+    os.remove(csv_path)
     sort_json(data)
 
 
-from typing import List
-
-def get_email(data: List[dict]) -> set:
+def get_email(data: list[dict]) -> set[str]:
     return {i[MAIL] for i in data}
 
 

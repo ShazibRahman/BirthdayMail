@@ -1,5 +1,9 @@
 import plyer
 import pathlib
+import os 
+
+
+os.environ["DISPLAY"] = ":0"
 
 pwd = pathlib.Path(__file__).parent.parent.resolve()
 

@@ -15,7 +15,7 @@ logger.info("telegram is being imported to the main package")
 
 from utils.asymetrcilaEncryDecry import decrypt  # noqa: E402
 from utils.load_env import load_env  # noqa: E402
-from utils.timeout_decorator import TimeoutError, timeout  # noqa: E402
+from decorators.timeout_decorator import TimeoutError, timeout  # noqa: E402
 
 load_env()
 

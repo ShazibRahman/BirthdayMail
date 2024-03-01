@@ -17,9 +17,10 @@ from tele.telegram import Telegram
 from utils.csv_to_json import main as csv_to_json
 from utils.load_env import load_env
 from utils.lock_manager import LockManager
-from utils.time_it import timeit
-from utils.timeout_decorator import TimeoutError, timeout
+from decorators.time_it import timeit
+from decorators.timeout_decorator import TimeoutError, timeout
 from utils.DesktopNotification import DesktopNotification
+from decorators.deprecated import deprecated
 
 load_env()
 
@@ -43,11 +44,11 @@ FOLDER_NAME = "BirthDayMail"
 timeout_value = int(os.getenv("TIMEOUTVALUE"))
 
 
-def convert(seconds):
+def convert(seconds: int) -> str:
     return time.strftime("%H hours %M Minutes %S Seconds to go ", time.gmtime(seconds))
 
 
-def render_template(template: Template, context: dict):
+def render_template(template: Template, context: dict) -> str:
     return template.render(context)
 
 
@@ -82,7 +83,7 @@ def is_greater(day1: int, month1: int, day2: int, month2: int) -> bool:
 
 
 @timeit
-def send_mail(sender_email: str, password: str, message: EmailMessage):
+def send_mail(sender_email: str, password: str, message: EmailMessage) -> bool:
     ctx = ssl.create_default_context()
     ctx.verify_mode = ssl.CERT_REQUIRED
     try:
@@ -111,9 +112,11 @@ def next_birth_year(birthday_string: str) -> int:
     else:
         return year + 1
 
+
 lock_file = os.path.join(os.path.dirname(__file__), "lock.lock")
 
 lock_manager = LockManager(lock_file)
+
 
 class BirthdayMail:
     def __init__(self) -> None:
@@ -127,7 +130,7 @@ class BirthdayMail:
 
         if not lock_manager.acquire_control():
             sys.exit(1)
-        
+
         self.occasions = None
         self.bday = None
         self.dates_done = None
@@ -139,9 +142,8 @@ class BirthdayMail:
         self.directory_string = os.path.dirname(__file__)
         self.sender_email: str = os.environ.get("shazmail")  # type: ignore
         self.password: str = os.environ.get("shazPassword")  # type: ignore
-        user = os.environ.get("USER")
-
-        logging.info(f"--logged in as {user=}")
+        if user := (os.environ.get("USER")):
+            logging.info(f"--logged in as {user=}")
 
         self.format_string = "%d-%m"
         self.format_string_with_year = "%d-%m-%Y"
@@ -152,14 +154,14 @@ class BirthdayMail:
         self.data_path = os.path.join(self.directory_string, "data", "data.json")
         self.dates_done_path = os.path.join(self.directory_string, "data", "dates.json")
 
-    
-    def __del__ (self):
+    def __del__(self):
         """
         Releases the lock.
         """
         lock_manager.release_control()
 
-
+    
+    @deprecated
     def send_email_on_special_occasion(self, occasion: dict):
         template_filename = os.path.join(
             self.directory_string, "templates", occasion["template"]
@@ -204,11 +206,13 @@ class BirthdayMail:
                 self.directory_string, "templates", template_name
             )
         else:
-            template_list = os.listdir(os.path.join(self.directory_string, "templates","bday_templates"))
+            template_list = os.listdir(
+                os.path.join(self.directory_string, "templates", "bday_templates")
+            )
             random.shuffle(template_list)
             template_name = random.choice(template_list)
         self.template_filename = os.path.join(
-            self.directory_string, "templates", "bday_templates",template_name
+            self.directory_string, "templates", "bday_templates", template_name
         )
         self.template_to_render = Template(
             open(self.template_filename, encoding="utf-8").read()
@@ -277,7 +281,8 @@ class BirthdayMail:
                     f"Backlog email for date {val['date']} and email {val['mail']} has been sent"
                 )
                 DesktopNotification(
-                    "Happy Birthday", f"Backlog email and telegram message for {val['name']} has been sent"
+                    "Happy Birthday",
+                    f"Backlog email and telegram message for {val['name']} has been sent",
                 )
 
         for i in last_run_with_year_set:
@@ -290,7 +295,7 @@ class BirthdayMail:
         return True
 
     @timeit
-    def send_mail_from_json(self):
+    def send_mail_from_json(self)->bool | None:
         self.dates_done: list[str] = json.load(
             open(self.dates_done_path, encoding="utf-8")
         )
@@ -438,7 +443,7 @@ class BirthdayMail:
 
     @timeit
     @timeout(10)
-    @DeprecationWarning
+    @deprecated
     def check_if_session_connection(self) -> Literal[True]:
         return True
 
@@ -462,6 +467,7 @@ class BirthdayMail:
             self.logging.info(f"telegram message sent to {name}")
 
 
+@timeit
 def main():
     birthday = BirthdayMail()
 
