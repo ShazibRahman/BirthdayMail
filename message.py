@@ -16,12 +16,13 @@ from typing import Literal, Tuple
 from tele.telegram import Telegram
 from utils.csv_to_json import main as csv_to_json
 from utils.load_env import load_env
+from utils.lock_manager import LockManager
 from utils.time_it import timeit
 from utils.timeout_decorator import TimeoutError, timeout
 from utils.DesktopNotification import DesktopNotification
 
 load_env()
-print(sys.path)
+
 
 # sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from gdrive.GDrive import GDrive  # pytlint : disable =  wrong-import-oder
@@ -110,6 +111,9 @@ def next_birth_year(birthday_string: str) -> int:
     else:
         return year + 1
 
+lock_file = os.path.join(os.path.dirname(__file__), "lock.lock")
+
+lock_manager = LockManager(lock_file)
 
 class BirthdayMail:
     def __init__(self) -> None:
@@ -121,6 +125,9 @@ class BirthdayMail:
         :return None
         """
 
+        if not lock_manager.acquire_control():
+            sys.exit(1)
+        
         self.occasions = None
         self.bday = None
         self.dates_done = None
@@ -144,6 +151,14 @@ class BirthdayMail:
         )
         self.data_path = os.path.join(self.directory_string, "data", "data.json")
         self.dates_done_path = os.path.join(self.directory_string, "data", "dates.json")
+
+    
+    def __del__ (self):
+        """
+        Releases the lock.
+        """
+        lock_manager.release_control()
+
 
     def send_email_on_special_occasion(self, occasion: dict):
         template_filename = os.path.join(
@@ -296,7 +311,7 @@ class BirthdayMail:
                 return None
         current_time = current_date_time.strftime(self.format_string)
         self.download_read_csv_from_server_then_upload()
-        self.bday: list(dict[str:str]) = json.load(
+        self.bday: list[dict[str:str]] = json.load(
             open(self.data_path, encoding="utf-8")
         )
 
