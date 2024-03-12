@@ -32,7 +32,6 @@ def log_uncaught_exceptions(exctype, value, traceback):
     DesktopNotification("Error", f"{exctype} : {value}")
 
 
-
 sys.excepthook = log_uncaught_exceptions
 
 

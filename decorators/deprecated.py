@@ -1,7 +1,12 @@
 import warnings
+from functools import wraps
+import logging
+
 
 def deprecated(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
-        warnings.warn("Call to deprecated method {}.".format(func.__name__), category=DeprecationWarning, stacklevel=2)
+        logging.warning("Call to deprecated method {}.".format(func.__name__))
         return func(*args, **kwargs)
+
     return wrapper

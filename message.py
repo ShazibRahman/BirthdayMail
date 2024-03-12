@@ -18,12 +18,12 @@ from utils.csv_to_json import main as csv_to_json
 from utils.load_env import load_env
 from utils.lock_manager import LockManager
 from decorators.time_it import timeit
-from decorators.timeout_decorator import TimeoutError, timeout
+from decorators.timeout_decorator import TimeOutError, timeout
 from utils.DesktopNotification import DesktopNotification
 from decorators.deprecated import deprecated
+from decorators.retry import retry
 
 load_env()
-
 
 # sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from gdrive.GDrive import GDrive  # pytlint : disable =  wrong-import-oder
@@ -84,7 +84,7 @@ def is_greater(day1: int, month1: int, day2: int, month2: int) -> bool:
 
 @timeit
 def send_mail(sender_email: str, password: str, message: EmailMessage) -> bool:
-    ctx = ssl.create_default_context()
+    ctx: ssl.SSLContext = ssl.create_default_context()
     ctx.verify_mode = ssl.CERT_REQUIRED
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
@@ -160,7 +160,6 @@ class BirthdayMail:
         """
         lock_manager.release_control()
 
-    
     @deprecated
     def send_email_on_special_occasion(self, occasion: dict):
         template_filename = os.path.join(
@@ -177,7 +176,7 @@ class BirthdayMail:
         for person in occasion["peopleToGreet"]:
             message = EmailMessage()
             message["Subject"] = (
-                occasion["subject"] + " " + person["name"].split("(")[0] + "!"
+                    occasion["subject"] + " " + person["name"].split("(")[0] + "!"
             )
             message["From"] = self.sender_email
             message["To"] = person["mail"]
@@ -295,7 +294,7 @@ class BirthdayMail:
         return True
 
     @timeit
-    def send_mail_from_json(self)->bool | None:
+    def send_mail_from_json(self) -> bool | None:
         self.dates_done: list[str] = json.load(
             open(self.dates_done_path, encoding="utf-8")
         )
@@ -378,7 +377,7 @@ class BirthdayMail:
 
         for occasion in self.occasions:
             if current_date_withyear == occasion["date"] or (
-                "sent" in occasion and not occasion["sent"]
+                    "sent" in occasion and not occasion["sent"]
             ):
                 self.send_email_on_special_occasion(occasion)
                 occasion["sent"] = True
@@ -408,7 +407,7 @@ class BirthdayMail:
             print(i, j, k, end="\n\n", sep="\n")
 
     def count_down_for_birthday(
-        self, birthday_string: str
+            self, birthday_string: str
     ) -> tuple[datetime, timedelta]:
         today = datetime.now()
         birthday_string = f"{birthday_string}-{str(next_birth_year(birthday_string))}"
@@ -427,15 +426,18 @@ class BirthdayMail:
 
     @timeit
     @lru_cache(maxsize=2, typed=False)
+    @retry(retries=3, delay=1)
     def download(self):
         return GDrive(FOLDER_NAME, logging).download(self.dates_done_path)
 
     @timeit
+    @retry(retries=3, delay=1)
     def upload(self):
         return GDrive(FOLDER_NAME, logging).upload(self.dates_done_path)
 
     @timeit
     @lru_cache(maxsize=2, typed=False)
+    @retry(retries=3, delay=1)
     def download_read_csv_from_server_then_upload(self):
         GDrive(FOLDER_NAME, logging).download(self.data_path)
         csv_to_json()
@@ -455,7 +457,7 @@ class BirthdayMail:
         try:
             with Telegram().client:
                 Telegram().message(chat_id, name)
-        except TimeoutError:
+        except TimeOutError:
             logging.error(
                 f"sending message to {name} failed due to authentication timeout"
             )
@@ -470,6 +472,7 @@ class BirthdayMail:
 @timeit
 def main():
     birthday = BirthdayMail()
+    birthday.check_if_session_connection()
 
     if birthday.send_mail_from_json() is None:
         logging.info("exiting")
@@ -480,6 +483,7 @@ def main():
 
 if __name__ == "__main__":
     import cProfile
+
 
     cProfile.run(statement="main()", sort="cumtime", filename="profile.out")
     import pstats

@@ -2,6 +2,7 @@ import logging
 import pathlib
 import sys
 import time
+from functools import wraps
 
 sys.path.append(pathlib.Path(__file__).parent.parent.resolve().as_posix())
 
@@ -16,7 +17,7 @@ def timeit(func):
     Returns:
     - The result of the timed function.
     """
-
+    @wraps(func)
     def wrapper(*args, **kwargs):
         start_time = time.time()
         result = func(*args, **kwargs)

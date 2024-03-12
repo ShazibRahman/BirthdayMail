@@ -1,4 +1,4 @@
-# pylint: disable=logging-fstring-interpolation,redefined-builtin,missing-function-docstring,unused-argument,unused-import , broad-exception-caught , wrong-import-order , wrong-import-position , missing-module-docstring
+
 import json
 import logging
 import os
@@ -10,12 +10,12 @@ logger = logging.getLogger()
 
 # autopep8: off
 sys.path.append(pathlib.Path(__file__).parent.parent.resolve().as_posix())
-logger.info("telegram is being imported to the main package")
 
+# autopep8: on
 
-from utils.asymetrcilaEncryDecry import decrypt  # noqa: E402
-from utils.load_env import load_env  # noqa: E402
-from decorators.timeout_decorator import TimeoutError, timeout  # noqa: E402
+from utils.asymetrcilaEncryDecry import decrypt   # noqa: E402
+from utils.load_env import load_env   # noqa: E402
+from decorators.timeout_decorator import TimeOutError, timeout  # noqa: E402
 
 load_env()
 
@@ -38,7 +38,7 @@ def read_json(path: str):
 MESSAGES: list[str] = read_json(
     path=pathlib.Path(__file__).parent.joinpath("messages.json").resolve().as_posix()
 )
-SESSSION_PATH = (
+SESSION_PATH = (
     pathlib.Path(__file__).parent.joinpath("telegram.session").resolve().as_posix()
 )
 
@@ -65,12 +65,12 @@ class Telegram:
     def __init__(self) -> None:
         if not self._initiated:
             self._initiated = True
-            print(SESSSION_PATH)
+            print(SESSION_PATH)
             api_id = decrypt(os.environ.get("api_id"))
             api_hash = decrypt(os.environ.get("api_hash"))
 
             self.client = TelegramClient(
-                SESSSION_PATH,
+                SESSION_PATH,
                 api_id,
                 api_hash,
             )
@@ -104,7 +104,7 @@ def main():
         with Telegram().client:
             logging.info("I am here")
             Telegram().message("+91 7970502165", "Shaz NamiKaze")
-    except TimeoutError:
+    except TimeOutError:
         logging.info(f"took more than the timeout  {value=}")
 
 
