@@ -7,9 +7,7 @@ from random import choice
 from Decorators.singleton import singleton_with_parameters
 from Decorators.timeout_decorator import TimeOutError, timeout
 from Utils.asymetrcilaEncryDecry import decrypt
-from Utils.load_env import load_env
 
-load_env()
 
 logger = logging.getLogger()
 

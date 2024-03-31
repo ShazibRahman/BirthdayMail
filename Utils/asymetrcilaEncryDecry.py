@@ -2,11 +2,10 @@ import os
 
 from cryptography.fernet import Fernet
 
-from Utils.load_env import load_env
+
 from Decorators.time_it import timeit
 
 # load the env file
-load_env()  # autopep8: off
 
 
 @timeit

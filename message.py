@@ -12,9 +12,8 @@ from email.message import EmailMessage
 from functools import lru_cache
 from typing import Literal, Tuple
 
-from tele.telegram import Telegram
+from telegram.telegram import Telegram
 from Utils.csv_to_json import main as csv_to_json
-from Utils.load_env import load_env
 from Utils.lock_manager import LockManager
 from Decorators.time_it import timeit
 from Decorators.timeout_decorator import TimeOutError, timeout
@@ -26,7 +25,6 @@ import pathlib
 
 pwd = pathlib.Path(__file__).parent.resolve()
 
-load_env()
 
 try:
     from jinja2 import Template
