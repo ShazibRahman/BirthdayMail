@@ -6,6 +6,7 @@ import smtplib
 import ssl
 import sys
 import time
+import base64
 from datetime import datetime, timedelta
 from email.message import EmailMessage
 from functools import lru_cache
@@ -21,6 +22,9 @@ from Utils.DesktopNotification import DesktopNotification
 from Decorators.deprecated import deprecated
 from Decorators.retry import retry
 from gdrive.GDrive import GDrive
+import pathlib
+
+pwd = pathlib.Path(__file__).parent.resolve()
 
 load_env()
 
@@ -44,7 +48,23 @@ def convert(seconds: int) -> str:
     return time.strftime("%H hours %M Minutes %S Seconds to go ", time.gmtime(seconds))
 
 
+def get_encoded_image_string(path: str | pathlib.Path) -> str:
+    with open(path, "rb") as f:
+        image_data = f.read()
+        base64_encoded_image_string = base64.b64encode(image_data).decode("utf-8")
+        print(base64_encoded_image_string)
+        return base64_encoded_image_string
+
+
 def render_template(template: Template, context: dict) -> str:
+    img_folder = os.path.join(pwd, "data", "image")
+
+    images = os.listdir(img_folder)
+    images = [img for img in images if 'icon' not in img]
+    random.shuffle(images)
+    image = random.choice(images)
+    context["image"] = f"data:image/png;base64,{get_encoded_image_string(os.path.join(img_folder, image))}"
+
     return template.render(context)
 
 
@@ -479,6 +499,7 @@ def main():
 
 if __name__ == "__main__":
     import cProfile
+
     print(os.environ)
     cProfile.run(statement="main()", sort="cumtime", filename="profile.out")
     import pstats
