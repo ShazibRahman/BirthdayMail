@@ -19,7 +19,7 @@ except ImportError:
     os.system("pip install -r requirement.txt")
     from telethon.sync import TelegramClient
 
-value: int = int(os.getenv("TIMEOUTVALUE"))
+time_out: int = int(os.getenv("TIMEOUTVALUE"))
 
 
 def read_json(path: str):
@@ -67,7 +67,7 @@ class Telegram:
             self.client.disconnect()
 
 
-@timeout(value)
+@timeout(time_out)
 def main():
     logging.basicConfig(
         level=logging.INFO,
@@ -80,7 +80,7 @@ def main():
             logging.info("I am here")
             Telegram().message(os.environ.get("phone_number"), "Shaz NamiKaze")
     except TimeOutError:
-        logging.info(f"took more than the timeout  {value=}")
+        logging.info(f"took more than the timeout  {time_out=}")
 
 
 if __name__ == "__main__":

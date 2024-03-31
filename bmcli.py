@@ -72,7 +72,7 @@ def cli_method(args):
             logging.info("Exiting...")
             exit(0)
 
-        birthday.send_email_special_occassions()
+        # birthday.send_email_special_occassions()
         birthday.upload()
 
         return

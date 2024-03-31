@@ -145,7 +145,6 @@ class BirthdayMail:
         if not lock_manager.acquire_control():
             sys.exit(1)
 
-        self.occasions = None
         self.bday = None
         self.dates_done = None
         logging.info("----Starting the application----")
@@ -162,9 +161,7 @@ class BirthdayMail:
         self.format_string = "%d-%m"
         self.format_string_with_year = "%d-%m-%Y"
         self.format_late_mail_date = "%d-%b"
-        self.occasion_path = os.path.join(
-            self.directory_string, "data", "occasions.json"
-        )
+
         self.data_path = os.path.join(self.directory_string, "data", "data.json")
         self.dates_done_path = os.path.join(self.directory_string, "data", "dates.json")
 
@@ -173,37 +170,6 @@ class BirthdayMail:
         Releases the lock.
         """
         lock_manager.release_control()
-
-    @deprecated
-    def send_email_on_special_occasion(self, occasion: dict):
-        template_filename = os.path.join(
-            self.directory_string, "templates", occasion["template"]
-        )
-
-        self.template_to_render = Template(
-            open(template_filename, encoding="utf-8").read()
-        )
-        context_template = render_template(self.template_to_render, {})
-        if len(occasion["peopleToGreet"]) <= 0:
-            logging.info(f"No Person is found in the occasions {occasion['name']}")
-
-        for person in occasion["peopleToGreet"]:
-            message = EmailMessage()
-            message["Subject"] = (
-                    occasion["subject"] + " " + person["name"].split("(")[0] + "!"
-            )
-            message["From"] = self.sender_email
-            message["To"] = person["mail"]
-
-            message.set_content(context_template, subtype="html")
-            if send_mail(self.sender_email, self.password, message):
-                logging.info(
-                    f"""The email has been sent to {person['name']} 
-                    with email {person['mail']} using template {occasion['template']}"""
-                )
-
-            # occasion["peopleToGreet"].remove(person) it is not very good to remove the person from the list that is
-            # being iterated over
 
     def message_func(self, val: dict, pending_mail=False) -> bool:
         receiver_email = val["mail"]
@@ -384,20 +350,7 @@ class BirthdayMail:
             key=lambda x: datetime.strptime(x, self.format_string_with_year)
         )
 
-    def send_email_special_occassions(self):
-        _, current_date_withyear = self.get_current_date()
 
-        self.occasions: list = json.load(open(self.occasion_path, encoding="utf-8"))
-
-        for occasion in self.occasions:
-            if current_date_withyear == occasion["date"] or (
-                    "sent" in occasion and not occasion["sent"]
-            ):
-                self.send_email_on_special_occasion(occasion)
-                occasion["sent"] = True
-                save_json_file(self.occasion_path, self.occasions)
-            else:
-                logging.info("--No Special occasion today")
 
     def get_all_birthday_info(self, print_num: str = "a"):
         self.bday: list[dict[str:str]] = json.load(
