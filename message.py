@@ -1,5 +1,3 @@
-# autopep8: off
-# pylint: disable=logging-fstring-interpolation,redefined-builtin,missing-function-docstring,unused-argument,unused-import , broad-exception-caught , wrong-import-order , wrong-import-position , missing-module-docstring
 import json
 import logging
 import os
@@ -14,19 +12,17 @@ from functools import lru_cache
 from typing import Literal, Tuple
 
 from tele.telegram import Telegram
-from utils.csv_to_json import main as csv_to_json
-from utils.load_env import load_env
-from utils.lock_manager import LockManager
-from decorators.time_it import timeit
-from decorators.timeout_decorator import TimeOutError, timeout
-from utils.DesktopNotification import DesktopNotification
-from decorators.deprecated import deprecated
-from decorators.retry import retry
+from Utils.csv_to_json import main as csv_to_json
+from Utils.load_env import load_env
+from Utils.lock_manager import LockManager
+from Decorators.time_it import timeit
+from Decorators.timeout_decorator import TimeOutError, timeout
+from Utils.DesktopNotification import DesktopNotification
+from Decorators.deprecated import deprecated
+from Decorators.retry import retry
+from gdrive.GDrive import GDrive
 
 load_env()
-
-# sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from gdrive.GDrive import GDrive  # pytlint : disable =  wrong-import-oder
 
 try:
     from jinja2 import Template
@@ -53,7 +49,7 @@ def render_template(template: Template, context: dict) -> str:
 
 
 @timeit
-def save_jsonto_file(file_name: str, data: list, indent: int = 4) -> None:
+def save_json_file(file_name: str, data: list, indent: int = 4) -> None:
     with open(file_name, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=indent)
     logging.info(f"write changes to {file_name=}")
@@ -275,7 +271,7 @@ class BirthdayMail:
                 try:
                     self.send_telegram(val["mobile"], val["name"])
                 except Exception as e:
-                    logging.info("telegram messaged failed due to %s ", str(e))
+                    logging.error("telegram messaged failed due to %s ", str(e))
                 logging.info(
                     f"Backlog email for date {val['date']} and email {val['mail']} has been sent"
                 )
@@ -290,7 +286,7 @@ class BirthdayMail:
 
         if modified_dates_file:
             self.sort_date_dones_files()
-            save_jsonto_file(self.dates_done_path, self.dates_done)
+            save_json_file(self.dates_done_path, self.dates_done)
         return True
 
     @timeit
@@ -354,7 +350,7 @@ class BirthdayMail:
 
         if modified_dates_done_file:
             self.sort_date_dones_files()
-            save_jsonto_file(self.dates_done_path, self.dates_done)
+            save_json_file(self.dates_done_path, self.dates_done)
         return True
 
     def get_current_date(self) -> Tuple[datetime, str]:
@@ -381,11 +377,11 @@ class BirthdayMail:
             ):
                 self.send_email_on_special_occasion(occasion)
                 occasion["sent"] = True
-                save_jsonto_file(self.occasion_path, self.occasions)
+                save_json_file(self.occasion_path, self.occasions)
             else:
                 logging.info("--No Special occasion today")
 
-    def get_all_bday_info(self, print_num: str = "a"):
+    def get_all_birthday_info(self, print_num: str = "a"):
         self.bday: list[dict[str:str]] = json.load(
             open(self.data_path, encoding="utf-8")
         )
@@ -483,8 +479,7 @@ def main():
 
 if __name__ == "__main__":
     import cProfile
-
-
+    print(os.environ)
     cProfile.run(statement="main()", sort="cumtime", filename="profile.out")
     import pstats
 

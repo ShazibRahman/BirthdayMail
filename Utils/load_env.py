@@ -34,3 +34,4 @@ if __name__ == "__main__":
 
     print(type(os.getenv("TIMEOUTVALUE")))
     print(os.getenv("TIMEOUTVALUE"))
+

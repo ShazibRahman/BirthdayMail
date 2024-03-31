@@ -2,8 +2,8 @@ import os
 
 from cryptography.fernet import Fernet
 
-from utils.load_env import load_env
-from decorators.time_it import timeit
+from Utils.load_env import load_env
+from Decorators.time_it import timeit
 
 # load the env file
 load_env()  # autopep8: off

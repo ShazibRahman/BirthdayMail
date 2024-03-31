@@ -7,3 +7,4 @@ api_hash := gAAAAABk9hVzPTnic7yC8_cqRfkPE3CMGr-6ILtwQrY0WIFUi90_zmwi8YkUbIvmdEiQ
 
 phone_number := +917970502165
 FOLDER_NAME := BirthDayMail
+DBUS_SESSION_BUS_ADDRESS := unix:path=/run/user/1000/bus

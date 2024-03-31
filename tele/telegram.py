@@ -1,23 +1,17 @@
-
 import json
 import logging
 import os
 import pathlib
-import sys
 from random import choice
 
-logger = logging.getLogger()
-
-# autopep8: off
-sys.path.append(pathlib.Path(__file__).parent.parent.resolve().as_posix())
-
-# autopep8: on
-
-from utils.asymetrcilaEncryDecry import decrypt   # noqa: E402
-from utils.load_env import load_env   # noqa: E402
-from decorators.timeout_decorator import TimeOutError, timeout  # noqa: E402
+from Decorators.singleton import singleton_with_parameters
+from Decorators.timeout_decorator import TimeOutError, timeout
+from Utils.asymetrcilaEncryDecry import decrypt
+from Utils.load_env import load_env
 
 load_env()
+
+logger = logging.getLogger()
 
 try:
     from telethon.sync import TelegramClient
@@ -47,35 +41,18 @@ def get_message_randomly() -> str:
     return choice(MESSAGES)
 
 
+@singleton_with_parameters
 class Telegram:
-    """
-    singleton class whose function is to create a telegram instance and send messsage to the chat
-    wrote this syncronously to integrate better with the legacy code
-    """
-
-    _instance = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            print("Telegram instance created")
-            cls._initiated = False
-        return cls._instance
-
     def __init__(self) -> None:
-        if not self._initiated:
-            self._initiated = True
-            print(SESSION_PATH)
-            api_id = decrypt(os.environ.get("api_id"))
-            api_hash = decrypt(os.environ.get("api_hash"))
+        print(SESSION_PATH)
+        api_id = decrypt(os.environ.get("api_id"))
+        api_hash = decrypt(os.environ.get("api_hash"))
 
-            self.client = TelegramClient(
-                SESSION_PATH,
-                api_id,
-                api_hash,
-            )
-        else:
-            print("Telegram instance already created")
+        self.client = TelegramClient(
+            SESSION_PATH,
+            api_id,
+            api_hash,
+        )
 
     def message(self, chat_id: str, name: str) -> None:
         if chat_id is None or chat_id == "":
@@ -103,7 +80,7 @@ def main():
     try:
         with Telegram().client:
             logging.info("I am here")
-            Telegram().message("+91 7970502165", "Shaz NamiKaze")
+            Telegram().message(os.environ.get("phone_number"), "Shaz NamiKaze")
     except TimeOutError:
         logging.info(f"took more than the timeout  {value=}")
 

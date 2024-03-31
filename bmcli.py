@@ -4,7 +4,7 @@ import subprocess
 
 from logger import getLogger
 from message import BirthdayMail
-from utils.check_internet_connectivity import check_internet_connection
+from Utils.check_internet_connectivity import check_internet_connection
 
 loggerPath = os.path.join(os.path.dirname(__file__), "data", "logger.log")
 
@@ -62,7 +62,7 @@ def cli_method(args):
     birthday = BirthdayMail()
 
     if args.b is not None and args.b != "":
-        birthday.get_all_bday_info(args.b)
+        birthday.get_all_birthday_info(args.b)
         return
     if not check_internet_connection():
         logging.error("No internet connection")

@@ -19,7 +19,7 @@ log = getLogger()
 if __name__ == "__main__":
     from sort_birthdays_json import main as sort_json
 else:
-    from utils.sort_birthdays_json import main as sort_json
+    from Utils.sort_birthdays_json import main as sort_json
 
 from gdrive.GDrive import GDrive
 

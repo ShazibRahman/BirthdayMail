@@ -2,7 +2,7 @@ import logging as log
 import pathlib
 import sys
 
-from utils.DesktopNotification import DesktopNotification
+from Utils.DesktopNotification import DesktopNotification
 
 logger_path = pathlib.Path(__file__).parent.joinpath("data", "logger.log").resolve()
 

@@ -1,7 +1,7 @@
 import plyer
 import pathlib
 import os
-from decorators.sneaky_throws import sneaky_throws
+from Decorators.sneaky_throws import sneaky_throws
 
 os.environ["DISPLAY"] = ":0"
 
@@ -33,8 +33,8 @@ class DesktopNotification:
             toast=True,
             app_icon=self.icon_path,
         )
-
-        # Not working cause of X11 and cron job issue have to add cron user name to group of either video or x11 dont know much about .. 
+        # Not working cause of X11 and cron job issue have to add cron user name to group of either video or x11 dont
+        # know much about ..
 
 
 if __name__ == "__main__":
