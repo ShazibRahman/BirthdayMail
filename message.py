@@ -25,7 +25,6 @@ import pathlib
 
 pwd = pathlib.Path(__file__).parent.resolve()
 
-
 try:
     from jinja2 import Template
 
@@ -349,8 +348,6 @@ class BirthdayMail:
         self.dates_done.sort(
             key=lambda x: datetime.strptime(x, self.format_string_with_year)
         )
-
-
 
     def get_all_birthday_info(self, print_num: str = "a"):
         self.bday: list[dict[str:str]] = json.load(

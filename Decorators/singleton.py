@@ -7,10 +7,11 @@ def singleton_with_parameters(cls):
     def inner(*args, **kwargs):
         key = (cls, args, tuple(kwargs.items()))
         if key not in instances:
-            logging.info("initializing %s  with %s", cls.__name__, key)
+            if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+                logging.debug("initializing %s  with %s", cls.__name__, key)
             instances[key] = cls(*args, **kwargs)
         else:
-            logging.info("reusing %s", key)
+            logging.debug("reusing %s", key)
         return instances[key]
 
     return inner
