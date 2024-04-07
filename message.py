@@ -221,16 +221,16 @@ class BirthdayMail:
         )  # to make datetime format same as the one last_run_date
 
         if last_run_datetime == current_datetime - timedelta(1):
-            return True
+            return True  # returning true as there is no pending mail
         last_run = last_run_datetime + timedelta(1)
         last_run_set: set[str] = set()
         last_run_with_year_set = set()
 
-        while last_run < current_datetime:
+        while last_run < current_datetime:  # preparing a set of dates from today -1 to last_run +1 to send pending mails
             last_run_string = last_run.strftime(self.format_string)
             last_run_set.add(last_run_string)
             last_run_with_year_set.add(last_run.strftime(self.format_string_with_year))
-            last_run = last_run + timedelta(1)
+            last_run = last_run + timedelta(1)  # to get the next date
 
         dates_list = [
             datetime.strptime(x, self.format_string).strftime(
@@ -241,7 +241,7 @@ class BirthdayMail:
 
         logging.info(f"--trying to send backlog emails for {dates_list=}")
 
-        for val in self.bday:
+        for val in self.bday: # not we are looping over pending dates to see if there is any birthday mail to be send
             if val["date"] in last_run_set:
                 logging.info(
                     f"--trying backlog mail dated={val['date']} for email={val['mail']}"
