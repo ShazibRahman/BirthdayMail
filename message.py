@@ -1,27 +1,27 @@
+import base64
 import json
 import logging
 import os
+import pathlib
 import random
 import smtplib
 import ssl
 import sys
 import time
-import base64
 from datetime import datetime, timedelta
 from email.message import EmailMessage
 from functools import lru_cache
 from typing import Literal, Tuple
 
-from telegram.telegram import Telegram
-from Utils.csv_to_json import main as csv_to_json
-from Utils.lock_manager import LockManager
+from Decorators.deprecated import deprecated
+from Decorators.retry import retry
 from Decorators.time_it import timeit
 from Decorators.timeout_decorator import TimeOutError, timeout
 from Utils.DesktopNotification import DesktopNotification
-from Decorators.deprecated import deprecated
-from Decorators.retry import retry
+from Utils.csv_to_json import main as csv_to_json
+from Utils.lock_manager import LockManager
 from gdrive.GDrive import GDrive
-import pathlib
+from telegram.telegram import Telegram
 
 pwd = pathlib.Path(__file__).parent.resolve()
 
@@ -73,7 +73,7 @@ def save_json_file(file_name: str, data: list, indent: int = 4) -> None:
 
 
 @timeit
-def read_json_to_py_objecy(file_name: str):
+def read_json_to_py_object(file_name: str):
     with open(file_name, encoding="utf-8") as f:
         return json.load(f)
 
@@ -105,7 +105,7 @@ def send_mail(sender_email: str, password: str, message: EmailMessage) -> bool:
             server.send_message(message)
             logging.info(f"---Mail sent to {message['To']}---")
     except Exception as e:
-        logging.error(f"---Network Error---{str(e)}")
+        logging.error(f"---Network Error---{repr(e)}")
         return False
     return True
 
@@ -161,8 +161,8 @@ class BirthdayMail:
         self.format_string_with_year = "%d-%m-%Y"
         self.format_late_mail_date = "%d-%b"
 
-        self.data_path = os.path.join(self.directory_string, "data", "data.json")
-        self.dates_done_path = os.path.join(self.directory_string, "data", "dates.json")
+        self.data_path = pathlib.Path(self.directory_string).joinpath("data", "data.json")
+        self.dates_done_path = pathlib.Path(self.directory_string).joinpath("data", "dates.json")
 
     def __del__(self):
         """
@@ -226,7 +226,8 @@ class BirthdayMail:
         last_run_set: set[str] = set()
         last_run_with_year_set = set()
 
-        while last_run < current_datetime:  # preparing a set of dates from today -1 to last_run +1 to send pending mails
+        while last_run < current_datetime:
+            # preparing a set of dates from today -1 to last_run +1 to send pending mails
             last_run_string = last_run.strftime(self.format_string)
             last_run_set.add(last_run_string)
             last_run_with_year_set.add(last_run.strftime(self.format_string_with_year))
@@ -241,22 +242,23 @@ class BirthdayMail:
 
         logging.info(f"--trying to send backlog emails for {dates_list=}")
 
-        for val in self.bday: # not we are looping over pending dates to see if there is any birthday mail to be send
+        for val in self.bday:
+            # not we are looping over pending dates to see if there is any birthday mail to be sent
             if val["date"] in last_run_set:
                 logging.info(
-                    f"--trying backlog mail dated={val['date']} for email={val['mail']}"
+                    f"--trying backlog mail dated={val['date']} for name={val['name']}"
                 )
                 if not (self.message_func(val, True)):
                     logging.info(
-                        f"Backlog email for date {val['date']} and email {val['mail']} has failed"
+                        f"Backlog email for date {val['date']} and name {val['name']} has failed"
                     )
                     return False
                 try:
                     self.send_telegram(val["mobile"], val["name"])
                 except Exception as e:
-                    logging.error("telegram messaged failed due to %s ", str(e))
+                    logging.error("telegram messaged failed due to %s ", repr(e))
                 logging.info(
-                    f"Backlog email for date {val['date']} and email {val['mail']} has been sent"
+                    f"Backlog email for date {val['date']} and name {val['name']} has been sent"
                 )
                 DesktopNotification(
                     "Happy Birthday",
@@ -272,68 +274,55 @@ class BirthdayMail:
             save_json_file(self.dates_done_path, self.dates_done)
         return True
 
+    def load_dates_done(self):
+        with open(self.dates_done_path, encoding="utf-8") as file:
+            self.dates_done = json.load(file)
+
+    def load_birthday_data(self):
+        with open(self.data_path, encoding="utf-8") as file:
+            self.bday = json.load(file)
+
+    def update_dates_done(self, current_date_withYear):
+        self.dates_done.append(current_date_withYear)
+        self.sort_date_dones_files()
+        save_json_file(self.dates_done_path, self.dates_done)
     @timeit
-    def send_mail_from_json(self) -> bool | None:
-        self.dates_done: list[str] = json.load(
-            open(self.dates_done_path, encoding="utf-8")
-        )
-        current_date_time, current_date_withyear = self.get_current_date()
-        if current_date_withyear in self.dates_done:
-            logging.info(
-                f"script for {current_date_withyear} has already been executed"
-            )
+    def send_mail_from_json(self) -> bool :
+        self.load_dates_done()
+        current_date_time, current_date_withYear = self.get_current_date()
+
+        if current_date_withYear in self.dates_done:
+            logging.info(f"script for {current_date_withYear} has already been executed")
             return None
+
         if self.download():
-            self.dates_done = json.load(
-                open(file=self.dates_done_path, encoding="utf-8")
-            )
-            if current_date_withyear in self.dates_done:
-                logging.info(
-                    f"script for {current_date_withyear} has already been executed"
-                )
+            self.load_dates_done()
+            if current_date_withYear in self.dates_done:
+                logging.info(f"script for {current_date_withYear} has already been executed")
                 return None
+
         current_time = current_date_time.strftime(self.format_string)
         self.download_read_csv_from_server_then_upload()
-        self.bday: list[dict[str:str]] = json.load(
-            open(self.data_path, encoding="utf-8")
-        )
+        self.load_birthday_data()
 
-        prev_success = self.check_for_pending_and_send_message()
-
-        if not prev_success:
+        if not self.check_for_pending_and_send_message():
             logging.info("---Sending Backlog email failed---")
             return None
 
-        match: bool = False
-        success: bool = False
-        modified_dates_done_file = False
-
+        match = False
         for val in self.bday:
-            if current_time == val["date"]:
-                success = self.message_func(val)
-                if success:
-                    self.send_telegram(val["mobile"], val["name"])
-                    logging.info(
-                        f"email for date {val['date']} and email {val['mail']} has been sent"
-                    )
-                    DesktopNotification(
-                        "Happy Birthday", f"email for {val['name']} has been sent"
-                    )
-
+            if current_time == val["date"] and self.message_func(val):
+                self.send_telegram(val["mobile"], val["name"])
+                logging.info(f"email for date {val['date']} and email {val['mail']} has been sent")
+                DesktopNotification("Happy Birthday", f"email for {val['name']} has been sent")
                 match = True
 
-        if match and success:
-            self.dates_done.append(current_date_withyear)
-            modified_dates_done_file = True
-
-        if not match:
-            modified_dates_done_file = True
+        if match:
+            self.update_dates_done(current_date_withYear)
+        else:
             logging.info("--None has birthday today--")
-            self.dates_done.append(current_date_withyear)
+            self.update_dates_done(current_date_withYear)
 
-        if modified_dates_done_file:
-            self.sort_date_dones_files()
-            save_json_file(self.dates_done_path, self.dates_done)
         return True
 
     def get_current_date(self) -> Tuple[datetime, str]:
@@ -378,16 +367,6 @@ class BirthdayMail:
         birthday_ = datetime.strptime(birthday_string, self.format_string_with_year)
         return birthday_, birthday_ - today
 
-    def telegram_session_error(self, body: str, subject: str = "session error") -> None:
-        if ("Your branch is up to date" in body) or ("nothing to commit" in body):
-            return
-        message = EmailMessage()
-        message["Subject"] = subject
-        message["From"] = self.sender_email
-        message["To"] = self.sender_email
-        message.set_content(body)
-        send_mail(self.sender_email, self.password, message)
-
     @timeit
     @lru_cache(maxsize=2, typed=False)
     @retry(retries=3, delay=1)
@@ -416,21 +395,18 @@ class BirthdayMail:
     @timeit
     @timeout(timeout_value)
     def send_telegram(self, chat_id, name):
-        error = False
-        logging.info("trying to send telegram message")
         try:
             with Telegram().client:
                 Telegram().message(chat_id, name)
+            self.logging.info(f"telegram messages sent to {name}")
         except TimeOutError:
             logging.error(
                 f"sending message to {name} failed due to authentication timeout"
             )
-            error = True
-            self.telegram_session_error(
-                body="Telegram authentication failed", subject="please re-login again"
+            DesktopNotification(
+                title="Telegram authentication failed",message="please re-login"
             )
-        if not error:
-            self.logging.info(f"telegram message sent to {name}")
+
 
 
 @timeit

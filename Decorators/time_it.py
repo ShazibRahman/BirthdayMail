@@ -24,7 +24,7 @@ def timeit(func):
         end_time = time.time()
 
         logging.info(
-            f"Time taken by {func.__name__} in ({func.__module__}.py): {end_time - start_time:.6f} seconds"
+            f"Time taken by {func.__name__} in ({func.__module__}.py): {end_time - start_time:.2f} seconds"
         )
         return result
 

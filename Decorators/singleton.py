@@ -15,3 +15,14 @@ def singleton_with_parameters(cls):
         return instances[key]
 
     return inner
+
+
+def singleton(cls):
+    instances = {}
+
+    def inner(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+
+    return inner
