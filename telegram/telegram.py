@@ -19,7 +19,7 @@ except ImportError:
     os.system("pip install -r requirement.txt")
     from telethon.sync import TelegramClient
 
-time_out: int = int(os.getenv("TIMEOUTVALUE"))
+time_out: int = int(os.getenv("TIMEOUTVALUE",10))
 
 
 def read_json(path: str):

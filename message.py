@@ -38,7 +38,7 @@ except ImportError:
 logger = logging.getLogger()
 
 FOLDER_NAME = "BirthDayMail"
-timeout_value = int(os.getenv("TIMEOUTVALUE"))
+timeout_value = int(os.getenv("TIMEOUTVALUE","10"))
 
 
 def convert(seconds: int) -> str:
@@ -419,7 +419,7 @@ def main():
         sys.exit(0)
     # birthday.send_email_special_occassions()
     birthday.upload()
-
+    logging.debug("----Ending the application----")
 
 if __name__ == "__main__":
     import cProfile
