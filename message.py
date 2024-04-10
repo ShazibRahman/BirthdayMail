@@ -383,7 +383,10 @@ class BirthdayMail:
     @retry(retries=3, delay=1)
     def download_read_csv_from_server_then_upload(self):
         GDrive(FOLDER_NAME, logging).download(self.data_path)
-        csv_to_json()
+        if not csv_to_json():
+            logging.info("data has not been changed so not uploading to gdrive")
+            return None
+
         GDrive(FOLDER_NAME, logging).upload(self.data_path)
 
     @timeit

@@ -27,6 +27,7 @@ from gdrive.GDrive import GDrive
 def csv_json(csv_path: str, json_path: str) -> None:
     data: list = json.load(open(json_path))
     names = get_email(data)
+    added_new_user: bool =  False
     with open(csv_path, encoding="utf-8") as csvFile:
         csv_reader = csv.DictReader(csvFile)
         for rows in csv_reader:
@@ -46,8 +47,9 @@ def csv_json(csv_path: str, json_path: str) -> None:
                 )
                 data.append(info)
                 print(rows[EMAIL_ADDRESS], "added to the list")
+                added_new_user = True
     os.remove(csv_path)
-    sort_json(data)
+    return sort_json(data) or added_new_user
 
 
 def get_email(data: list[dict]) -> set[str]:

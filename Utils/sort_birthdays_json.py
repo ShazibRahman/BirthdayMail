@@ -29,13 +29,14 @@ def write_json_file(file_name: str, data: list, indent: int = 4) -> None:
         json.dump(data, f, indent=indent)
 
 
-def main(data) -> None:
+def main(data) -> bool:
     print(data_path)
     birthdays_sorted = sort_birthdays_object_on_key(data, "date")
     if birthdays_sorted == data:
         console.log("Birthdays are already sorted")
-        return
+        return False
     write_json_file(data_path, birthdays_sorted)
+    return True
 
 
 if __name__ == "__main__":
