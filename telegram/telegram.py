@@ -5,7 +5,7 @@ import pathlib
 from random import choice
 
 from Decorators.singleton import singleton_with_parameters
-from Decorators.timeout_decorator import TimeOutError, timeout
+from Decorators.timeout_decorator import customTimeOutError, timeout
 from Utils.asymetrcilaEncryDecry import decrypt
 
 

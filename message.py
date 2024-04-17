@@ -16,7 +16,7 @@ from typing import Literal, Tuple
 from Decorators.deprecated import deprecated
 from Decorators.retry import retry
 from Decorators.time_it import timeit
-from Decorators.timeout_decorator import TimeOutError, timeout
+from Decorators.timeout_decorator import customTimeOutError, timeout
 from Utils.DesktopNotification import DesktopNotification
 from Utils.csv_to_json import main as csv_to_json
 from Utils.lock_manager import LockManager

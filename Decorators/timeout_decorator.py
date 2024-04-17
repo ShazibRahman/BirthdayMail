@@ -1,7 +1,7 @@
 import signal
 
 
-class TimeOutError(Exception):
+class customTimeOutError(Exception):
     pass
 
 
@@ -19,7 +19,7 @@ def timeout(seconds):
     def decorator(func):
         def wrapper(*args, **kwargs):
             def handler(signum, frame):
-                raise TimeOutError("Function execution exceeded the specified timeout.")
+                raise customTimeOutError("Function execution exceeded the specified timeout.")
 
             # Set up a signal handler to raise TimeoutError if the timeout is reached
             signal.signal(signal.SIGALRM, handler)
@@ -37,3 +37,12 @@ def timeout(seconds):
         return wrapper
 
     return decorator
+
+
+if __name__ == "__main__":
+    @timeout(1)
+    def foo():
+        while True:
+            pass
+
+    foo()
