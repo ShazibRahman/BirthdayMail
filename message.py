@@ -403,7 +403,7 @@ class BirthdayMail:
             with Telegram().client:
                 Telegram().message(chat_id, name)
             self.logging.info(f"telegram messages sent to {name}")
-        except TimeOutError:
+        except customTimeOutError:
             logging.error(
                 f"sending message to {name} failed due to authentication timeout"
             )
