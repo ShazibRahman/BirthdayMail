@@ -2,16 +2,14 @@ import argparse
 import os
 import subprocess
 
-from logger import getLogger
 from message import BirthdayMail
 from Utils.check_internet_connectivity import check_internet_connection
 
 loggerPath = os.path.join(os.path.dirname(__file__), "data", "logger.log")
 
-logging = getLogger()
 
 
-def read_logs(logger_path: str) -> None:
+def read_logs(logger_path: str,tail:bool = False) -> None:
     """
     Read logs from a specified logger path.
 
@@ -21,7 +19,7 @@ def read_logs(logger_path: str) -> None:
     Returns:
         None
     """
-    subprocess.run(["bat", "--paging=never", logger_path])
+    subprocess.run(["bat", "--paging=never", logger_path]) if not tail else subprocess.run(["tail","-n 100","-f", logger_path])
 
 
 def clear_logs():
@@ -48,10 +46,15 @@ def cli_method(args):
     Side Effects:
         Calls various functions based on the value of `args.logs` and `args.s`.
     """
+    if args.l =="true":
+        print("tailing logs")
+        read_logs(loggerPath , True )
+        return
     if args.logs:
         if args.logs == "show":
             read_logs(logger_path=loggerPath)
             return
+
         if args.logs == "clear":
             clear_logs()
             return
@@ -69,7 +72,6 @@ def cli_method(args):
         return
     if args.s == "y":
         if birthday.send_mail_from_json() is None:
-            logging.info("Exiting...")
             exit(0)
 
         # birthday.send_email_special_occassions()
@@ -81,7 +83,9 @@ def cli_method(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--logs", type=str, choices=["show", "clear"])
+    parser.add_argument("-l", type=str, choices=["true","false"],default="false")
     parser.add_argument("-b", type=str)
     parser.add_argument("-s", type=str, choices=["y", "n"])
     arg = parser.parse_args()
+    print(arg)
     cli_method(arg)

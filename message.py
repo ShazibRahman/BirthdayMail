@@ -18,6 +18,7 @@ from Decorators.retry import retry
 from Decorators.time_it import timeit
 from Decorators.timeout_decorator import customTimeOutError, timeout
 from Utils.DesktopNotification import DesktopNotification
+from Utils.check_internet_connectivity import check_internet_connection
 from Utils.csv_to_json import main as csv_to_json
 from Utils.lock_manager import LockManager
 from gdrive.GDrive import GDrive
