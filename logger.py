@@ -28,6 +28,8 @@ log.getLogger().addHandler(stream_handler)
 
 
 def log_uncaught_exceptions(exctype, value, traceback):
+    if exctype == KeyboardInterrupt:
+        return
     log.exception("Uncaught exception", exc_info=(exctype, value, traceback))
     DesktopNotification("Error", f"{exctype} : {value}")
 
