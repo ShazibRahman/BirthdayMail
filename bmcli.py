@@ -1,7 +1,7 @@
 import argparse
 import os
 import subprocess
-
+import logging
 from message import BirthdayMail
 from Utils.check_internet_connectivity import check_internet_connection
 

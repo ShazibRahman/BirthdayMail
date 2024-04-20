@@ -79,7 +79,7 @@ def main():
         with Telegram().client:
             logging.info("I am here")
             Telegram().message(os.environ.get("phone_number"), "Shaz NamiKaze")
-    except TimeOutError:
+    except customTimeOutError:
         logging.info(f"took more than the timeout  {time_out=}")
 
 
