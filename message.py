@@ -23,7 +23,9 @@ from Utils.csv_to_json import main as csv_to_json
 from Utils.lock_manager import LockManager
 from gdrive.GDrive import GDrive
 from telegram.telegram import Telegram
+from data.images import image_list
 
+# print(image_list)
 pwd = pathlib.Path(__file__).parent.resolve()
 
 try:
@@ -39,29 +41,18 @@ except ImportError:
 logger = logging.getLogger()
 
 FOLDER_NAME = "BirthDayMail"
-timeout_value = int(os.getenv("TIMEOUTVALUE","10"))
+timeout_value = int(os.getenv("TIMEOUTVALUE", "10"))
+
+HOST = "smtp.gmail.com"
+PORT = 465
 
 
 def convert(seconds: int) -> str:
     return time.strftime("%H hours %M Minutes %S Seconds to go ", time.gmtime(seconds))
 
 
-def get_encoded_image_string(path: str | pathlib.Path) -> str:
-    with open(path, "rb") as f:
-        image_data = f.read()
-        base64_encoded_image_string = base64.b64encode(image_data).decode("utf-8")
-        print(base64_encoded_image_string)
-        return base64_encoded_image_string
-
-
 def render_template(template: Template, context: dict) -> str:
-    img_folder = os.path.join(pwd, "data", "image")
-
-    images = os.listdir(img_folder)
-    images = [img for img in images if 'icon' not in img]
-    random.shuffle(images)
-    image = random.choice(images)
-    context["image"] = f"data:image/png;base64,{get_encoded_image_string(os.path.join(img_folder, image))}"
+    context["image"] = random.choice(image_list)
 
     return template.render(context)
 
@@ -101,7 +92,7 @@ def send_mail(sender_email: str, password: str, message: EmailMessage) -> bool:
     ctx: ssl.SSLContext = ssl.create_default_context()
     ctx.verify_mode = ssl.CERT_REQUIRED
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
+        with smtplib.SMTP_SSL(HOST, PORT, context=ctx) as server:
             server.login(sender_email, password)
             server.send_message(message)
             logging.info(f"---Mail sent to {message['To']}---")
@@ -155,15 +146,19 @@ class BirthdayMail:
         self.directory_string = os.path.dirname(__file__)
         self.sender_email: str = os.environ.get("shazmail")  # type: ignore
         self.password: str = os.environ.get("shazPassword")  # type: ignore
-        if user := (os.environ.get("USER")):
+        if user := os.environ.get("USER"):
             logging.info(f"--logged in as {user=}")
 
         self.format_string = "%d-%m"
         self.format_string_with_year = "%d-%m-%Y"
         self.format_late_mail_date = "%d-%b"
 
-        self.data_path = pathlib.Path(self.directory_string).joinpath("data", "data.json")
-        self.dates_done_path = pathlib.Path(self.directory_string).joinpath("data", "dates.json")
+        self.data_path = pathlib.Path(self.directory_string).joinpath(
+            "data", "data.json"
+        )
+        self.dates_done_path = pathlib.Path(self.directory_string).joinpath(
+            "data", "dates.json"
+        )
 
     def __del__(self):
         """
@@ -249,7 +244,7 @@ class BirthdayMail:
                 logging.info(
                     f"--trying backlog mail dated={val['date']} for name={val['name']}"
                 )
-                if not (self.message_func(val, True)):
+                if not self.message_func(val, True):
                     logging.info(
                         f"Backlog email for date {val['date']} and name {val['name']} has failed"
                     )
@@ -287,19 +282,24 @@ class BirthdayMail:
         self.dates_done.append(current_date_withYear)
         self.sort_date_dones_files()
         save_json_file(self.dates_done_path, self.dates_done)
+
     @timeit
-    def send_mail_from_json(self) -> bool :
+    def send_mail_from_json(self) -> bool:
         self.load_dates_done()
         current_date_time, current_date_withYear = self.get_current_date()
 
         if current_date_withYear in self.dates_done:
-            logging.info(f"script for {current_date_withYear} has already been executed")
+            logging.info(
+                f"script for {current_date_withYear} has already been executed"
+            )
             return None
 
         if self.download():
             self.load_dates_done()
             if current_date_withYear in self.dates_done:
-                logging.info(f"script for {current_date_withYear} has already been executed")
+                logging.info(
+                    f"script for {current_date_withYear} has already been executed"
+                )
                 return None
 
         current_time = current_date_time.strftime(self.format_string)
@@ -314,8 +314,12 @@ class BirthdayMail:
         for val in self.bday:
             if current_time == val["date"] and self.message_func(val):
                 self.send_telegram(val["mobile"], val["name"])
-                logging.info(f"email for date {val['date']} and email {val['mail']} has been sent")
-                DesktopNotification("Happy Birthday", f"email for {val['name']} has been sent")
+                logging.info(
+                    f"email for date {val['date']} and email {val['mail']} has been sent"
+                )
+                DesktopNotification(
+                    "Happy Birthday", f"email for {val['name']} has been sent"
+                )
                 match = True
 
         if match:
@@ -361,7 +365,7 @@ class BirthdayMail:
             print(i, j, k, end="\n\n", sep="\n")
 
     def count_down_for_birthday(
-            self, birthday_string: str
+        self, birthday_string: str
     ) -> tuple[datetime, timedelta]:
         today = datetime.now()
         birthday_string = f"{birthday_string}-{str(next_birth_year(birthday_string))}"
@@ -386,7 +390,7 @@ class BirthdayMail:
         GDrive(FOLDER_NAME, logging).download(self.data_path)
         if not csv_to_json():
             logging.info("data has not been changed so not uploading to gdrive")
-            return None
+            return
 
         GDrive(FOLDER_NAME, logging).upload(self.data_path)
 
@@ -408,9 +412,8 @@ class BirthdayMail:
                 f"sending message to {name} failed due to authentication timeout"
             )
             DesktopNotification(
-                title="Telegram authentication failed",message="please re-login"
+                title="Telegram authentication failed", message="please re-login"
             )
-
 
 
 @timeit
@@ -424,6 +427,7 @@ def main():
     # birthday.send_email_special_occassions()
     birthday.upload()
     logging.debug("----Ending the application----")
+
 
 if __name__ == "__main__":
     import cProfile
