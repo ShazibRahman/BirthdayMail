@@ -3,6 +3,7 @@ import json
 import os
 import pathlib
 import sys
+import logging
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -15,7 +16,6 @@ NAME = "name"
 MOBILE_NUMBER = "mobile number"
 FOLDER_NAME = "BirthDayMail"
 MOBILE = "mobile"
-log = getLogger()
 if __name__ == "__main__":
     from sort_birthdays_json import main as sort_json
 else:
@@ -27,7 +27,7 @@ from gdrive.GDrive import GDrive
 def csv_json(csv_path: str, json_path: str) -> None:
     data: list = json.load(open(json_path))
     names = get_email(data)
-    added_new_user: bool =  False
+    added_new_user: bool = False
     with open(csv_path, encoding="utf-8") as csvFile:
         csv_reader = csv.DictReader(csvFile)
         for rows in csv_reader:
@@ -57,7 +57,7 @@ def get_email(data: list[dict]) -> set[str]:
 
 
 def main():
-    gdrive = GDrive(FOLDER_NAME, log)
+    gdrive = GDrive(FOLDER_NAME)
     mimetype = "text/csv"
     file_id = "1IGVrFmTQq-lePEaKWQxEzIAmYy8UwyXgQU0xqyQ3hzc"
     file_path = (
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     data_file = (
         pathlib.Path(__file__).parent.parent.joinpath("data", "data.json").resolve()
     )
-    gdrive = GDrive(FOLDER_NAME, log)
+    gdrive = GDrive(FOLDER_NAME)
     mimetype = "text/csv"
     gdrive.download(data_file)
     file_id = "1IGVrFmTQq-lePEaKWQxEzIAmYy8UwyXgQU0xqyQ3hzc"

@@ -8,8 +8,7 @@ from Utils.check_internet_connectivity import check_internet_connection
 loggerPath = os.path.join(os.path.dirname(__file__), "data", "logger.log")
 
 
-
-def read_logs(logger_path: str,tail:bool = False) -> None:
+def read_logs(logger_path: str, tail: bool = False) -> None:
     """
     Read logs from a specified logger path.
 
@@ -19,7 +18,11 @@ def read_logs(logger_path: str,tail:bool = False) -> None:
     Returns:
         None
     """
-    subprocess.run(["bat", "--paging=never", logger_path]) if not tail else subprocess.run(["tail","-n 100","-f", logger_path])
+    (
+        subprocess.run(["bat", "--paging=never", logger_path])
+        if not tail
+        else subprocess.run(["tail", "-n 100", "-f", logger_path])
+    )
 
 
 def clear_logs():
@@ -46,9 +49,9 @@ def cli_method(args):
     Side Effects:
         Calls various functions based on the value of `args.logs` and `args.s`.
     """
-    if args.l =="true":
+    if args.l == "true":
         print("tailing logs")
-        read_logs(loggerPath , True )
+        read_logs(loggerPath, True)
         return
     if args.logs:
         if args.logs == "show":
@@ -83,7 +86,7 @@ def cli_method(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--logs", type=str, choices=["show", "clear"])
-    parser.add_argument("-l", type=str, choices=["true","false"],default="false")
+    parser.add_argument("-l", type=str, choices=["true", "false"], default="false")
     parser.add_argument("-b", type=str)
     parser.add_argument("-s", type=str, choices=["y", "n"])
     arg = parser.parse_args()

@@ -1,6 +1,7 @@
 import logging
 
 
+# a perfect example of an advantage of using closure in Python
 def singleton_with_parameters(cls):
     instances = {}
 

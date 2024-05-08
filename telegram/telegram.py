@@ -2,14 +2,14 @@ import json
 import logging
 import os
 import pathlib
+
 from random import choice
 
 from Decorators.singleton import singleton_with_parameters
 from Decorators.timeout_decorator import customTimeOutError, timeout
 from Utils.asymetrcilaEncryDecry import decrypt
-
-
-logger = logging.getLogger()
+from data.images import image_list
+from data.messages_list import list_of_messages
 
 try:
     from telethon.sync import TelegramClient
@@ -19,7 +19,7 @@ except ImportError:
     os.system("pip install -r requirement.txt")
     from telethon.sync import TelegramClient
 
-time_out: int = int(os.getenv("TIMEOUTVALUE",10))
+time_out: int = int(os.getenv("TIMEOUTVALUE", 10))
 
 
 def read_json(path: str):
@@ -27,28 +27,25 @@ def read_json(path: str):
         return json.load(f)
 
 
-MESSAGES: list[str] = read_json(
-    path=pathlib.Path(__file__).parent.joinpath("messages.json").resolve().as_posix()
-)
 SESSION_PATH = (
     pathlib.Path(__file__).parent.joinpath("telegram.session").resolve().as_posix()
 )
 
 
 def get_message_randomly() -> str:
-    return choice(MESSAGES)
+    return choice(list_of_messages)
 
 
 @singleton_with_parameters
 class Telegram:
     def __init__(self) -> None:
         print(SESSION_PATH)
-        api_id = decrypt(os.environ.get("api_id"))
-        api_hash = decrypt(os.environ.get("api_hash"))
+        api_id: str = decrypt(os.environ.get("api_id"))
+        api_hash: str = decrypt(os.environ.get("api_hash"))
 
         self.client = TelegramClient(
             SESSION_PATH,
-            api_id,
+            api_id,  # noqa
             api_hash,
         )
 
@@ -56,9 +53,9 @@ class Telegram:
         if chat_id is None or chat_id == "":
             logging.error("chat id is empty")
             return
-        message = get_message_randomly().format(name=name)
-        logging.info(f"Sending message to {chat_id}")
-        self.client.start(os.environ["phone_number"])
+        message = get_message_randomly().format(name=name) + choice(image_list)
+        logging.info(f"Sending message to {chat_id=}")
+        self.client.start(os.environ["phone_number"])  # noqa
         try:
             self.client.send_message(chat_id, message)
         except Exception as e:
@@ -75,12 +72,12 @@ def main():
         datefmt="%d-%b-%y %H:%M:%S",
         handlers=[logging.StreamHandler()],
     )
+    logging.info("juiwufbuefbg")
     try:
         with Telegram().client:
-            logging.info("I am here")
             Telegram().message(os.environ.get("phone_number"), "Shaz NamiKaze")
     except customTimeOutError:
-        logging.info(f"took more than the timeout  {time_out=}")
+        logging.info(f"took more than {time_out=}")
 
 
 if __name__ == "__main__":

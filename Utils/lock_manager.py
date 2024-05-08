@@ -1,20 +1,23 @@
+import io
 import logging
 import os
-import io
-import psutil
+import pathlib
 import time
+from functools import wraps
+
+import psutil
 
 
 def check_pid_exists(pid):
     """
-        Check if a process with the given PID exists.
+    Check if a process with the given PID exists.
 
-        Args:
-            pid (int): The PID of the process to check.
+    Args:
+        pid (int): The PID of the process to check.
 
-        Returns:
-            bool: True if a process with the given PID exists, False otherwise.
-        """
+    Returns:
+        bool: True if a process with the given PID exists, False otherwise.
+    """
     return psutil.pid_exists(pid)
 
 
@@ -74,14 +77,49 @@ class LockManager:
             if os.getpid() == int(pid):
                 os.remove(self.lock_file)
                 logging.info("Control released.")
-            else:
-                raise LockError("Cannot release control. Lock is owned by another process.")
+
+    def __enter__(self):
+        return self.acquire_control()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.release_control()
+
+
+def lock_manager_decorator(file_name: str | pathlib.Path) -> callable:
+    def decorator(func: callable) -> callable:
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            lock_manager = LockManager(file_name)
+            if not lock_manager.acquire_control():
+                return
+            try:
+                return func(*args, **kwargs)
+            finally:
+                lock_manager.release_control()
+
+        return wrapper
+
+    return decorator
 
 
 if __name__ == "__main__":
-    lock_manager = LockManager(
-        "/home/shazib/Desktop/Folder/python/wallpaper_updates/wallpaper_updator.lock"
-    )
-    lock_manager.acquire_control()
+    # lock_manager = LockManager(
+    #     "/home/shazib/Desktop/Folder/python/wallpaper_updates/wallpaper_updator.lock"
+    # )
+    import logging
 
-    lock_manager.release_control()
+    logging.basicConfig(level=logging.INFO)
+
+    # @lock_manager_decorator("wallpaper_updator.lock")
+    # def main():
+    #     time.sleep(10)
+    #     print("Hello World")
+    #
+    # main()
+
+    with LockManager("wallpaper_updator.lock") as lock_acquired:
+        if lock_acquired:
+            time.sleep(10)
+            print("Hello World")
+        else:
+            print("Lock not acquired")

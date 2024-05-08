@@ -20,7 +20,7 @@ from Decorators.timeout_decorator import customTimeOutError, timeout
 from Utils.DesktopNotification import DesktopNotification
 from Utils.check_internet_connectivity import check_internet_connection
 from Utils.csv_to_json import main as csv_to_json
-from Utils.lock_manager import LockManager
+from Utils.lock_manager import LockManager, lock_manager_decorator
 from gdrive.GDrive import GDrive
 from telegram.telegram import Telegram
 from data.images import image_list
@@ -120,7 +120,7 @@ def next_birth_year(birthday_string: str) -> int:
 
 lock_file = os.path.join(os.path.dirname(__file__), "lock.lock")
 
-lock_manager = LockManager(lock_file)
+# lock_manager = LockManager(lock_file)
 
 
 class BirthdayMail:
@@ -133,8 +133,8 @@ class BirthdayMail:
         :return None
         """
 
-        if not lock_manager.acquire_control():
-            sys.exit(1)
+        # if not lock_manager.acquire_control():
+        #     sys.exit(1)
 
         self.bday = None
         self.dates_done = None
@@ -164,7 +164,7 @@ class BirthdayMail:
         """
         Releases the lock.
         """
-        lock_manager.release_control()
+        # lock_manager.release_control()
 
     def message_func(self, val: dict, pending_mail=False) -> bool:
         receiver_email = val["mail"]
@@ -284,6 +284,7 @@ class BirthdayMail:
         save_json_file(self.dates_done_path, self.dates_done)
 
     @timeit
+    @lock_manager_decorator(lock_file)
     def send_mail_from_json(self) -> bool:
         self.load_dates_done()
         current_date_time, current_date_withYear = self.get_current_date()
@@ -375,24 +376,26 @@ class BirthdayMail:
     @timeit
     @lru_cache(maxsize=2, typed=False)
     @retry(retries=3, delay=1)
+    @timeout(15)
     def download(self):
-        return GDrive(FOLDER_NAME, logging).download(self.dates_done_path)
+        return GDrive(FOLDER_NAME).download(self.dates_done_path)
 
     @timeit
     @retry(retries=3, delay=1)
     def upload(self):
-        return GDrive(FOLDER_NAME, logging).upload(self.dates_done_path)
+        return GDrive(FOLDER_NAME).upload(self.dates_done_path)
 
     @timeit
     @lru_cache(maxsize=2, typed=False)
     @retry(retries=3, delay=1)
+    @timeout(15)
     def download_read_csv_from_server_then_upload(self):
-        GDrive(FOLDER_NAME, logging).download(self.data_path)
+        GDrive(FOLDER_NAME).download(self.data_path)
         if not csv_to_json():
             logging.info("data has not been changed so not uploading to gdrive")
             return
 
-        GDrive(FOLDER_NAME, logging).upload(self.data_path)
+        GDrive(FOLDER_NAME).upload(self.data_path)
 
     @timeit
     @timeout(10)

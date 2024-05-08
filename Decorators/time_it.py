@@ -17,6 +17,7 @@ def timeit(func):
     Returns:
     - The result of the timed function.
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         start_time = time.time()
@@ -32,6 +33,7 @@ def timeit(func):
 
 
 async def timeit_async(func):
+    @wraps(func)
     async def wrapper(*args, **kwargs):
         start_time = time.time()
         result = await func(*args, **kwargs)
