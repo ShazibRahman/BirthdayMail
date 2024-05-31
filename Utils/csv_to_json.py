@@ -3,11 +3,9 @@ import json
 import os
 import pathlib
 import sys
-import logging
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-from logger import getLogger  # autopep8: off  # noqa: E402
 
 EMAIL_ADDRESS = "Email Address"
 DATE = "date"
@@ -24,7 +22,7 @@ else:
 from gdrive.GDrive import GDrive
 
 
-def csv_json(csv_path: str, json_path: str) -> None:
+def csv_json(csv_path: str, json_path: str) -> bool:
     data: list = json.load(open(json_path))
     names = get_email(data)
     added_new_user: bool = False
@@ -61,13 +59,19 @@ def main():
     mimetype = "text/csv"
     file_id = "1IGVrFmTQq-lePEaKWQxEzIAmYy8UwyXgQU0xqyQ3hzc"
     file_path = (
-        pathlib.Path(__file__).parent.joinpath("Little Info (Responses).csv").resolve()
+        pathlib.Path(__file__)
+        .parent.joinpath("Little Info (Responses).csv")
+        .resolve()
+        .as_posix()
     )
     gdrive.download_by_id_and_file_format(file_path, file_id, mimetype)
 
     csv_json(
         file_path,
-        pathlib.Path(__file__).parent.parent.joinpath("data", "data.json").resolve(),
+        pathlib.Path(__file__)
+        .parent.parent.joinpath("data", "data.json")
+        .resolve()
+        .as_posix(),
     )
 
 

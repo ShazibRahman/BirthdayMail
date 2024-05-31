@@ -13,6 +13,7 @@ def read_logs(logger_path: str, tail: bool = False) -> None:
     Read logs from a specified logger path.
 
     Args:
+        tail:
         logger_path (str): The path to the logger file.
 
     Returns:
@@ -49,7 +50,7 @@ def cli_method(args):
     Side Effects:
         Calls various functions based on the value of `args.logs` and `args.s`.
     """
-    if args.l == "true":
+    if args.tail == "true":
         print("tailing logs")
         read_logs(loggerPath, True)
         return
@@ -86,7 +87,7 @@ def cli_method(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--logs", type=str, choices=["show", "clear"])
-    parser.add_argument("-l", type=str, choices=["true", "false"], default="false")
+    parser.add_argument("--tail", type=str, choices=["true", "false"], default="false")
     parser.add_argument("-b", type=str)
     parser.add_argument("-s", type=str, choices=["y", "n"])
     arg = parser.parse_args()

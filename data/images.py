@@ -10,4 +10,5 @@ image_list = [
     "https://i.ibb.co/9230zfN/9e6cc0ce-ef3f-11ee-b2ff-0c7a15180e5c.gif",
     "https://i.ibb.co/x6svb4T/3.webp",
     "https://i.ibb.co/stwDdD3/4.webp",
+    "https://i.ibb.co/1rMqgpm/gift-box.png",
 ]

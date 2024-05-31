@@ -47,18 +47,18 @@ def write_json_file(file_name: str | pathlib.Path, data: list, indent: int = 4) 
         json.dump(data, f, indent=indent)
 
 
-def main(data) -> bool:
+def main(data_inside_main_function) -> bool:
     """
 
     Args:
-        data:
+        data_inside_main_function:
 
     Returns:
 
     """
     # print(data_path)
-    birthdays_sorted = sort_birthdays_object_on_key(data, "date")
-    if birthdays_sorted == data:
+    birthdays_sorted = sort_birthdays_object_on_key(data_inside_main_function, "date")
+    if birthdays_sorted == data_inside_main_function:
         console.log("Birthdays are already sorted")
         return False
     write_json_file(data_path, birthdays_sorted)
