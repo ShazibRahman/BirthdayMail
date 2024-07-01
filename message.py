@@ -24,6 +24,7 @@ from Utils.lock_manager import LockManager, lock_manager_decorator
 from gdrive.GDrive import GDrive
 from telegram.telegram import Telegram
 from data.images import image_list
+import logger  # type: ignore
 
 # print(image_list)
 pwd = pathlib.Path(__file__).parent.resolve()
@@ -38,7 +39,6 @@ except ImportError:
         os.system("pip3 install -r requirement.txt")
     from jinja2 import Template
 
-logger = logging.getLogger()
 
 FOLDER_NAME = "BirthDayMail"
 timeout_value = int(os.getenv("TIMEOUTVALUE", "10"))
@@ -345,25 +345,41 @@ class BirthdayMail:
         )
 
     def get_all_birthday_info(self, print_num: str = "a"):
-        self.bday: list[dict[str:str]] = json.load(
-            open(self.data_path, encoding="utf-8")
-        )
+        with open(self.data_path, encoding="utf-8") as file:
+            self.bday: list[dict[str:str]] = json.load(file)
+
         lis = []
         for val in self.bday:
             next_birthday, diff_datetime = self.count_down_for_birthday(val["date"])
-
             parse_date_to_look_good = datetime.strftime(next_birthday, "%d %b %Y")
             days_rem_mes = f"{diff_datetime.days} days {convert(diff_datetime.seconds)}"
-
             lis.append(
-                [diff_datetime.days, val["name"], parse_date_to_look_good, days_rem_mes]
+                {
+                    "name": val["name"],
+                    "next_birthday": parse_date_to_look_good,
+                    "remaining_days": days_rem_mes,
+                    "days": diff_datetime.days,
+                }
             )
-        lis.sort()
-        if print_num != "a":
-            lis = lis[: int(print_num)]
 
-        for _, i, j, k in lis:
-            print(i, j, k, end="\n\n", sep="\n")
+        lis.sort(key=lambda x: x["days"])
+
+        if print_num.isdigit():
+            lis = lis[: int(print_num)]
+        elif print_num.strip().lower() != "a":
+            raise ValueError(
+                "Invalid input for print_num. Expected a digit or 'a', got: "
+                + print_num
+            )
+
+        for info in lis:
+            print(
+                info["name"],
+                info["next_birthday"],
+                info["remaining_days"],
+                sep="\n",
+                end="\n\n",
+            )
 
     def count_down_for_birthday(
         self, birthday_string: str
@@ -398,12 +414,6 @@ class BirthdayMail:
         GDrive(FOLDER_NAME).upload(self.data_path)
 
     @timeit
-    @timeout(10)
-    @deprecated
-    def check_if_session_connection(self) -> Literal[True]:
-        return True
-
-    @timeit
     @timeout(timeout_value)
     def send_telegram(self, chat_id, name):
         try:
@@ -422,8 +432,6 @@ class BirthdayMail:
 @timeit
 def main():
     birthday = BirthdayMail()
-    birthday.check_if_session_connection()
-
     if birthday.send_mail_from_json() is None:
         logging.info("exiting")
         sys.exit(0)
@@ -433,11 +441,4 @@ def main():
 
 
 if __name__ == "__main__":
-    import cProfile
-
-    print(os.environ)
-    cProfile.run(statement="main()", sort="cumtime", filename="profile.out")
-    import pstats
-
-    p = pstats.Stats("profile.out")
-    p.sort_stats("cumtime").reverse_order().print_stats()
+    main()

@@ -68,7 +68,7 @@ def cli_method(args):
 
     birthday = BirthdayMail()
 
-    if args.b is not None and args.b != "":
+    if args.b is not None and args.b.strip() != "":
         birthday.get_all_birthday_info(args.b)
         return
     if not check_internet_connection():

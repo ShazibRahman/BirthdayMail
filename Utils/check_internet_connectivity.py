@@ -1,8 +1,8 @@
 import socket
-from functools import lru_cache
+from functools import cache
 
 
-@lru_cache(maxsize=1)
+@cache
 def check_internet_connection():
     """
     Checks if there is an internet connection available by attempting to connect to a well-known website.
