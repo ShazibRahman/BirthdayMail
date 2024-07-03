@@ -1,10 +1,12 @@
 import logging
+from functools import wraps
 
 
 # a perfect example of an advantage of using closure in Python
 def singleton_with_parameters(cls):
     instances = {}
 
+    @wraps(cls)
     def inner(*args, **kwargs):
         key = (cls, args, tuple(kwargs.items()))
         if key not in instances:

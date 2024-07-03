@@ -23,7 +23,7 @@ class DesktopNotification:
 
         Returns:
             None
-"""
+        """
         plyer.notification.notify(
             title=title,
             message=message,
@@ -33,8 +33,8 @@ class DesktopNotification:
             toast=True,
             app_icon=self.icon_path,
         )
-        # Not working cause of X11 and cron job issue have to add cron user name to group of either video or x11 dont
-        # know much about ..
+        # Not working cause of X11 and cron job issue have to add cron username to group of either video or x11 don't
+        # know much about .
 
 
 if __name__ == "__main__":

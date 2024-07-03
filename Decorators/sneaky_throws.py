@@ -6,14 +6,15 @@ from functools import wraps
 
 def sneaky_throws(func: Callable) -> Any:
     """
-        A decorator that wraps a function and catches any exceptions that occur during its execution.
+    A decorator that wraps a function and catches any exceptions that occur during its execution.
 
-        Parameters:
-        func (Callable): The function to be wrapped.
+    Parameters:
+    func (Callable): The function to be wrapped.
 
-        Returns:
-        Any: The return value of the wrapped function, or None if an exception is caught.
-"""
+    Returns:
+    Any: The return value of the wrapped function, or None if an exception is caught.
+    """
+
     @wraps(func)
     def wrapper(*args, **kwargs) -> Any:
         try:
@@ -24,9 +25,10 @@ def sneaky_throws(func: Callable) -> Any:
     return wrapper
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+
     @sneaky_throws
     def foo():
-        return 1/0
+        return 1 / 0
 
     foo()

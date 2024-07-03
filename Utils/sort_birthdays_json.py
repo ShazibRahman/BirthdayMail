@@ -21,9 +21,9 @@ def read_json_file(file_name: str | pathlib.Path) -> list:
     """
 
     Args:
-        file_name:
+        file_name: str | pathlib.Path:
 
-    Returns:
+    Returns: dict | list
 
     """
     console.log(f"Reading {file_name}")
@@ -35,11 +35,11 @@ def write_json_file(file_name: str | pathlib.Path, data: list, indent: int = 4) 
     """
 
     Args:
-        file_name:
-        data:
-        indent:
+        file_name: str | pathlib.Path:
+        data: MutableMapping | list:
+        indent: int: (Default value = 4)
 
-    Returns:
+    Returns: None
 
     """
     console.log(f"Writing {file_name}")

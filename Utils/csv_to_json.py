@@ -22,7 +22,8 @@ else:
 from gdrive.GDrive import GDrive
 
 
-def csv_json(csv_path: str, json_path: str) -> bool:
+# noinspection PyTypeChecker
+def csv_json(csv_path: str | pathlib.Path, json_path: str | pathlib.Path) -> bool:
     data: list = json.load(open(json_path))
     names = get_email(data)
     added_new_user: bool = False
@@ -55,19 +56,21 @@ def get_email(data: list[dict]) -> set[str]:
 
 
 def main():
-    gdrive = GDrive(FOLDER_NAME)
-    mimetype = "text/csv"
-    file_id = "1IGVrFmTQq-lePEaKWQxEzIAmYy8UwyXgQU0xqyQ3hzc"
-    file_path = (
+    gdrive_main = GDrive(FOLDER_NAME)
+    mimetype_main = "text/csv"
+    file_id_main = "1IGVrFmTQq-lePEaKWQxEzIAmYy8UwyXgQU0xqyQ3hzc"
+    file_path_main = (
         pathlib.Path(__file__)
         .parent.joinpath("Little Info (Responses).csv")
         .resolve()
         .as_posix()
     )
-    gdrive.download_by_id_and_file_format(file_path, file_id, mimetype)
+    gdrive_main.download_by_id_and_file_format(
+        file_path_main, file_id_main, mimetype_main
+    )
 
     csv_json(
-        file_path,
+        file_path_main,
         pathlib.Path(__file__)
         .parent.parent.joinpath("data", "data.json")
         .resolve()
