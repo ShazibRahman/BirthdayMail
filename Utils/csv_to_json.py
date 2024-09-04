@@ -31,7 +31,7 @@ def csv_json(csv_path: str | pathlib.Path, json_path: str | pathlib.Path) -> boo
         csv_reader = csv.DictReader(csvFile)
         for rows in csv_reader:
             if rows[EMAIL_ADDRESS] in names:
-                print(rows[EMAIL_ADDRESS], "already in the list")
+                ...
             else:
                 info = {MAIL: rows[EMAIL_ADDRESS], NAME: rows[NAME]}
                 date_data = rows["birth date"].split("/")
@@ -45,7 +45,6 @@ def csv_json(csv_path: str | pathlib.Path, json_path: str | pathlib.Path) -> boo
                     rows[f"+91{MOBILE_NUMBER}"] if rows[MOBILE_NUMBER] != "" else ""
                 )
                 data.append(info)
-                print(rows[EMAIL_ADDRESS], "added to the list")
                 added_new_user = True
     os.remove(csv_path)
     return sort_json(data) or added_new_user

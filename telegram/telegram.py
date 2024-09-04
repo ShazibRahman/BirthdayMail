@@ -39,7 +39,6 @@ def get_message_randomly() -> str:
 @singleton_with_parameters
 class Telegram:
     def __init__(self) -> None:
-        print(SESSION_PATH)
         api_id: str = decrypt(os.environ.get("api_id"))
         api_hash: str = decrypt(os.environ.get("api_hash"))
 
@@ -72,7 +71,6 @@ def main():
         datefmt="%d-%b-%y %H:%M:%S",
         handlers=[logging.StreamHandler()],
     )
-    logging.info("juiwufbuefbg")
     try:
         with Telegram().client:
             Telegram().message(os.environ.get("phone_number"), "Shaz NamiKaze")

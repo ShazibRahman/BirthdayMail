@@ -26,7 +26,6 @@ from telegram.telegram import Telegram
 from data.images import image_list
 import logger  # type: ignore
 
-# print(image_list)
 pwd = pathlib.Path(__file__).parent.resolve()
 
 try:
@@ -185,9 +184,9 @@ class BirthdayMail:
             )
             random.shuffle(template_list)
             template_name = random.choice(template_list)
-        self.template_filename = os.path.join(
-            self.directory_string, "templates", "bday_templates", template_name
-        )
+            self.template_filename = os.path.join(
+                self.directory_string, "templates", "bday_templates", template_name
+            )
         self.template_to_render = Template(
             open(self.template_filename, encoding="utf-8").read()
         )

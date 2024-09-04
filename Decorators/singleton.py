@@ -23,6 +23,7 @@ def singleton_with_parameters(cls):
 def singleton(cls):
     instances = {}
 
+    @wraps(cls)
     def inner(*args, **kwargs):
         if cls not in instances:
             instances[cls] = cls(*args, **kwargs)
