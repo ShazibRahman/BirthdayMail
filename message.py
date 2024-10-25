@@ -313,7 +313,10 @@ class BirthdayMail:
         match = False
         for val in self.bday:
             if current_time == val["date"] and self.message_func(val):
-                self.send_telegram(val["mobile"], val["name"])
+                try:
+                    self.send_telegram(val["mobile"], val["name"])
+                except Exception as e:
+                    logging.error("telegram messaged failed due to %s ", repr(e))
                 logging.info(
                     f"email for date {val['date']} and email {val['mail']} has been sent"
                 )
@@ -322,12 +325,9 @@ class BirthdayMail:
                 )
                 match = True
 
-        if match:
-            self.update_dates_done(current_date_withYear)
-        else:
+        if not match:
             logging.info("--None has birthday today--")
-            self.update_dates_done(current_date_withYear)
-
+        self.update_dates_done(current_date_withYear)
         return True
 
     def get_current_date(self) -> Tuple[datetime, str]:
@@ -406,10 +406,7 @@ class BirthdayMail:
     @timeout(15)
     def download_read_csv_from_server_then_upload(self):
         GDrive(FOLDER_NAME).download(self.data_path)
-        if not csv_to_json():
-            logging.info("data has not been changed so not uploading to gdrive")
-            return
-
+        csv_to_json()
         GDrive(FOLDER_NAME).upload(self.data_path)
 
     @timeit
