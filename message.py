@@ -1,4 +1,3 @@
-import base64
 import json
 import logging
 import os
@@ -11,17 +10,18 @@ import time
 from datetime import datetime, timedelta
 from email.message import EmailMessage
 from functools import lru_cache
-from typing import Literal, Tuple
+from typing import Tuple
 
-from Decorators.deprecated import deprecated
+from gdrive.GDrive import GDrive
+
+
 from Decorators.retry import retry
 from Decorators.time_it import timeit
 from Decorators.timeout_decorator import customTimeOutError, timeout
 from Utils.DesktopNotification import DesktopNotification
 from Utils.check_internet_connectivity import check_internet_connection
 from Utils.csv_to_json import main as csv_to_json
-from Utils.lock_manager import LockManager, lock_manager_decorator
-from gdrive.GDrive import GDrive
+from Utils.lock_manager import lock_manager_decorator
 from telegram.telegram import Telegram
 from data.images import image_list
 import logger  # type: ignore
@@ -47,10 +47,38 @@ PORT = 465
 
 
 def convert(seconds: int) -> str:
+    """
+    Converts a given number of seconds into a formatted string
+    representing hours, minutes, and seconds.
+
+    Args:
+        seconds (int): The number of seconds to convert.
+
+    Returns:
+        str: A string representing the time in the format
+            "H hours M Minutes S Seconds to go".
+    """
+
     return time.strftime("%H hours %M Minutes %S Seconds to go ", time.gmtime(seconds))
 
 
 def render_template(template: Template, context: dict) -> str:
+    """
+    Renders a template with the provided context, adding a random image.
+
+    This function selects a random image from the `image_list` and adds it
+    to the context under the "image" key. It then renders the given Jinja2
+    template using this updated context.
+
+    Args:
+        template (Template): The Jinja2 template object to be rendered.
+        context (dict): A dictionary containing the variables to be used
+            during rendering.
+
+    Returns:
+        str: The rendered template as a string.
+    """
+
     context["image"] = random.choice(image_list)
 
     return template.render(context)
@@ -58,6 +86,17 @@ def render_template(template: Template, context: dict) -> str:
 
 @timeit
 def save_json_file(file_name: str, data: list, indent: int = 4) -> None:
+    """
+    Saves the given data to a JSON file.
+
+    Args:
+        file_name (str): The name of the file to save the data to.
+        data (list): The data to be saved.
+        indent (int): The indentation level for the JSON file. Defaults to 4.
+
+    Returns:
+        None
+    """
     with open(file_name, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=indent)
     logging.info(f"write changes to {file_name=}")
@@ -65,11 +104,29 @@ def save_json_file(file_name: str, data: list, indent: int = 4) -> None:
 
 @timeit
 def read_json_to_py_object(file_name: str):
+    """
+    Reads a JSON file and converts it into a Python object.
+
+    Args:
+        file_name (str): The path to the JSON file.
+
+    Returns:
+        A Python object that is the result of decoding the JSON file.
+    """
     with open(file_name, encoding="utf-8") as f:
         return json.load(f)
 
 
 def find_next_leap_year(year: int) -> int:
+    """
+    This function takes an integer year as argument and returns the next leap year.
+
+    The algorithm works as follows:
+    - If the year is already a leap year, it adds 4 to it.
+    - If the year is not a leap year and the remainder of the year divided by 4 is not 0,
+      it adds the remainder to the year.
+    - In all other cases, it adds 4 to the year.
+    """
     if year % 4 == 0 and year % 100 != 0 or year % 400 == 0:
         return year + 4
     elif year % 4 != 0:
@@ -79,15 +136,51 @@ def find_next_leap_year(year: int) -> int:
 
 
 def is_leap_year(year: int) -> bool:
+    """
+    Checks if a given year is a leap year.
+
+    A leap year is exactly divisible by 4 except for century years (years ending with 00).
+    The century year is a leap year only if it is perfectly divisible by 400.
+    This means that in the Gregorian calendar, the years 2000 and 2400 are leap years,
+    while 1800, 1900, 2100, 2200, 2300 and 2500 are not.
+
+    Args:
+        year (int): The year to check
+
+    Returns:
+        bool: True if the year is a leap year, False otherwise
+    """
     return year % 4 == 0 and year % 100 != 0 or year % 400 == 0
 
 
 def is_greater(day1: int, month1: int, day2: int, month2: int) -> bool:
+    """
+    Determines if the date represented by (day1, month1) is later than
+    the date represented by (day2, month2).
+
+    Args:
+        day1 (int): The day of the first date.
+        month1 (int): The month of the first date.
+        day2 (int): The day of the second date.
+        month2 (int): The month of the second date.
+
+    Returns:
+        bool: True if the first date is later than the second date, False otherwise.
+    """
+
     return month1 > month2 or month1 == month2 and day1 > day2
 
 
 @timeit
 def send_mail(sender_email: str, password: str, message: EmailMessage) -> bool:
+    """
+    Send an email using smtplib.
+
+    :param sender_email: The sender's email address
+    :param password: The sender's email password
+    :param message: The EmailMessage object to send
+    :return: True if the email was sent successfully, False otherwise
+    """
     ctx: ssl.SSLContext = ssl.create_default_context()
     ctx.verify_mode = ssl.CERT_REQUIRED
     try:
@@ -102,6 +195,13 @@ def send_mail(sender_email: str, password: str, message: EmailMessage) -> bool:
 
 
 def next_birth_year(birthday_string: str) -> int:
+    """
+    Calculates the year of the next birthday of a person given their birthday string "DD-MM".
+    If the birthday is 29th February, it will return the next leap year if the current year is not a leap year.
+    If the birthday has already passed this year, it will return the next year.
+    :param birthday_string: A string in the format "DD-MM" representing the birthday
+    :return: The year of the next birthday of the person
+    """
     day1, month1 = birthday_string.split("-")
     today = datetime.now()
     day2, month2, year = today.day, today.month, today.year
@@ -166,6 +266,16 @@ class BirthdayMail:
         # lock_manager.release_control()
 
     def message_func(self, val: dict, pending_mail=False) -> bool:
+        """
+        Function to send birthday email.
+
+        Args:
+            val (dict): A dictionary containing email address and name of the birthday person.
+            pending_mail (bool, optional): Whether this is a pending mail or not. Defaults to False.
+
+        Returns:
+            bool: True if the email was sent successfully, False otherwise.
+        """
         receiver_email = val["mail"]
         name = val["name"]
         message = EmailMessage()
@@ -197,6 +307,19 @@ class BirthdayMail:
 
     @timeit
     def check_for_pending_and_send_message(self):
+        """
+        This function is responsible for sending pending birthday emails.
+
+        It checks if today's date is the same as the last date stored in the dates_done file.
+        If it is the same, then it returns True as there are no pending emails to be sent.
+        If it is not the same, it calculates the difference and for each of the dates in the difference,
+        it checks if there is any birthday mail to be sent. If there is, it sends the email and telegram message.
+
+        Finally, it updates the dates_done file with the current date.
+
+        Returns:
+            bool: True if all the pending emails were sent successfully, False otherwise.
+        """
         if not self.dates_done or len(self.dates_done) <= 0:
             logging.info("--No Previous date found--")
             return True
@@ -270,14 +393,45 @@ class BirthdayMail:
         return True
 
     def load_dates_done(self):
+        """
+        Loads the dates_done data from a JSON file and assigns it to the instance variable.
+
+        The JSON file is located at the path specified by the dates_done_path attribute.
+        It is expected to contain a list of dates representing the dates for which
+        birthday emails have already been sent.
+
+        Raises:
+            JSONDecodeError: If the file contains invalid JSON.
+            FileNotFoundError: If the file does not exist.
+        """
+
         with open(self.dates_done_path, encoding="utf-8") as file:
             self.dates_done = json.load(file)
 
     def load_birthday_data(self):
+        """
+        Loads birthday data from a JSON file and assigns it to the instance variable.
+
+        The JSON file is located at the path specified by the data_path attribute.
+        It is expected to contain a list of dictionaries, each representing an individual's birthday information.
+
+        Raises:
+            JSONDecodeError: If the file contains invalid JSON.
+            FileNotFoundError: If the file does not exist.
+        """
         with open(self.data_path, encoding="utf-8") as file:
             self.bday = json.load(file)
 
     def update_dates_done(self, current_date_withYear):
+        """
+        Updates the dates_done list with the given current date.
+
+        Args:
+            current_date_withYear (str): The current date in the format "DD-MM-YYYY".
+
+        Returns:
+            None
+        """
         self.dates_done.append(current_date_withYear)
         self.sort_date_dones_files()
         save_json_file(self.dates_done_path, self.dates_done)
@@ -285,6 +439,19 @@ class BirthdayMail:
     @timeit
     @lock_manager_decorator(lock_file)
     def send_mail_from_json(self) -> bool:
+        """
+        Sends birthday emails and updates records from JSON data.
+
+        This function checks if the email script for the current date
+        has already been executed. If not, it downloads necessary data,
+        processes pending birthday emails, and sends notifications via
+        email and Telegram. It ensures that no duplicate emails are sent
+        for the same date and updates the records once emails are sent.
+
+        Returns:
+            bool: True if the emails were sent successfully, None otherwise.
+        """
+
         self.load_dates_done()
         current_date_time, current_date_withYear = self.get_current_date()
 
@@ -331,19 +498,48 @@ class BirthdayMail:
         return True
 
     def get_current_date(self) -> Tuple[datetime, str]:
+        """
+        Return the current date as a tuple of a datetime object and a string
+        in the format defined in self.format_string_with_year.
+
+        Returns:
+            Tuple[datetime, str]: A tuple containing the current datetime object
+            and the current date in the format defined in self.format_string_with_year.
+        """
         current_date_time = datetime.now()
         current_date_withyear = current_date_time.strftime(self.format_string_with_year)
 
         return current_date_time, current_date_withyear
 
     def sort_date_dones_files(self) -> None:
-        # remove duplicates
+        """
+        Sorts and removes duplicates from the dates_done list.
+
+        The function converts the dates_done list into a set to remove duplicate entries, 
+        and then sorts the list in chronological order based on the date format defined 
+        in self.format_string_with_year.
+
+        Returns:
+            None
+        """
+
         self.dates_done = list(set(self.dates_done))
         self.dates_done.sort(
             key=lambda x: datetime.strptime(x, self.format_string_with_year)
         )
 
     def get_all_birthday_info(self, print_num: str = "a"):
+        """
+        Prints the next birthday information for all the contacts in the database.
+
+        Args:
+            print_num (str, optional): The number of contacts to print the birthday information for.
+                If 'a', prints information for all contacts. Defaults to 'a'.
+
+        Raises:
+            ValueError: If `print_num` is not a digit or 'a'.
+
+        """
         with open(self.data_path, encoding="utf-8") as file:
             self.bday: list[dict[str:str]] = json.load(file)
 
@@ -383,6 +579,12 @@ class BirthdayMail:
     def count_down_for_birthday(
         self, birthday_string: str
     ) -> tuple[datetime, timedelta]:
+        """
+        Calculates the next birthday datetime and timedelta from today's date.
+
+        :param birthday_string: A string in the format "DD-MM" representing the birthday
+        :return: A tuple containing the next birthday datetime and timedelta from today's date
+        """
         today = datetime.now()
         birthday_string = f"{birthday_string}-{str(next_birth_year(birthday_string))}"
         birthday_ = datetime.strptime(birthday_string, self.format_string_with_year)
@@ -393,11 +595,33 @@ class BirthdayMail:
     @retry(retries=3, delay=1)
     @timeout(15)
     def download(self):
+        """
+        Downloads the dates_done file from Google Drive using the GDrive class.
+
+        This function is decorated with @timeit to measure the time it takes to execute,
+        @lru_cache(maxsize=2, typed=False) to cache the result of the function for 2
+        different arguments, @retry(retries=3, delay=1) to retry the function 3 times
+        with a delay of 1 second between retries if it fails, and @timeout(15) to timeout
+        the function after 15 seconds if it takes longer than that to complete.
+
+        Returns:
+            bool: True if the file was downloaded successfully, False otherwise.
+        """
         return GDrive(FOLDER_NAME).download(self.dates_done_path)
 
     @timeit
     @retry(retries=3, delay=1)
     def upload(self):
+        """
+        Uploads the dates_done file to Google Drive using the GDrive class.
+
+        This function is decorated with @timeit to measure the time it takes to execute,
+        and @retry(retries=3, delay=1) to retry the function 3 times with a delay of 1 second
+        between retries if it fails.
+
+        Returns:
+            bool: True if the file was uploaded successfully, False otherwise.
+        """
         return GDrive(FOLDER_NAME).upload(self.dates_done_path)
 
     @timeit
@@ -405,6 +629,21 @@ class BirthdayMail:
     @retry(retries=3, delay=1)
     @timeout(15)
     def download_read_csv_from_server_then_upload(self):
+        """
+        Downloads the CSV file from Google Drive using the GDrive class, 
+        converts it to a JSON file using the csv_json function,
+        and then uploads the JSON file back to Google Drive using the GDrive class.
+
+        This function is decorated with @timeit to measure the time it takes to execute,
+        @lru_cache(maxsize=2, typed=False) to cache the result of the function for 2
+        different arguments, @retry(retries=3, delay=1) to retry the function 3 times
+        with a delay of 1 second between retries if it fails, and @timeout(15) to timeout
+        the function after 15 seconds if it takes longer than that to complete.
+
+        Returns:
+            bool: True if the file was downloaded,
+            converted to JSON and uploaded successfully, False otherwise.
+        """
         GDrive(FOLDER_NAME).download(self.data_path)
         csv_to_json()
         GDrive(FOLDER_NAME).upload(self.data_path)
@@ -412,13 +651,28 @@ class BirthdayMail:
     @timeit
     @timeout(timeout_value)
     def send_telegram(self, chat_id, name):
+        """
+        Sends a Telegram message to a specified chat ID.
+
+        This function utilizes the Telegram class to send a message to a specified chat ID and logs
+        the result. It is decorated with @timeit to measure execution time and @timeout to enforce
+        a timeout on the function execution.
+
+        Args:
+            chat_id: The ID of the chat where the message will be sent.
+            name: The name to be included in the message.
+
+        Raises:
+            customTimeOutError: If the message sending process exceeds the specified timeout.
+        """
+
         try:
             with Telegram().client:
                 Telegram().message(chat_id, name)
             self.logging.info(f"telegram messages sent to {name}")
         except customTimeOutError:
             logging.error(
-                f"sending message to {name} failed due to authentication timeout"
+                "sending message to %s failed due to authentication timeout",name
             )
             DesktopNotification(
                 title="Telegram authentication failed", message="please re-login"
@@ -427,6 +681,17 @@ class BirthdayMail:
 
 @timeit
 def main():
+    """
+    Main function of the program.
+
+    Instantiates a BirthdayMail object and calls its send_mail_from_json method to send birthday emails.
+    If the method returns None, the program exits.
+    Then, the upload method of the BirthdayMail object is called to upload the JSON file to Google Drive.
+    Finally, a debug message is logged to mark the end of the application.
+
+    Returns:
+        None
+    """
     birthday = BirthdayMail()
     if birthday.send_mail_from_json() is None:
         logging.info("exiting")

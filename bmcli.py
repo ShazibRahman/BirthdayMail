@@ -75,6 +75,7 @@ def cli_method(args):
         logging.error("No internet connection")
         return
     if args.s == "y":
+        print("inside method call")
         if birthday.send_mail_from_json() is None:
             exit(0)
 

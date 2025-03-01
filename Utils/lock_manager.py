@@ -4,6 +4,7 @@ import os
 import pathlib
 import time
 from functools import wraps
+import asyncio
 
 import psutil
 
@@ -45,7 +46,13 @@ class LockManager:
         """
         while os.path.exists(self.lock_file):
             with open(self.lock_file, "r", encoding="utf-8") as file:
-                pid = file.read()
+                pid = file.read().strip()
+
+                if pid == "":
+                    # Remove stale lock file
+                    os.remove(self.lock_file)
+                    continue
+
                 if pid == str(os.getpid()):
                     logging.info("Control already acquired.")
                     return True
@@ -86,9 +93,29 @@ class LockManager:
 
 
 def lock_manager_decorator(file_name: str | pathlib.Path) -> callable:
+    """
+    Decorator to manage locks for functions.
+
+    Args:
+        file_name (str | pathlib.Path): The name of the lock file.
+
+    Returns:
+        callable: The decorated function.
+    """
+
     def decorator(func: callable) -> callable:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        async def async_wrapper(*args, **kwargs):
+            lock_manager = LockManager(file_name)
+            if not lock_manager.acquire_control():
+                return
+            try:
+                return await func(*args, **kwargs)
+            finally:
+                lock_manager.release_control()
+
+        @wraps(func)
+        def sync_wrapper(*args, **kwargs):
             lock_manager = LockManager(file_name)
             if not lock_manager.acquire_control():
                 return
@@ -97,7 +124,10 @@ def lock_manager_decorator(file_name: str | pathlib.Path) -> callable:
             finally:
                 lock_manager.release_control()
 
-        return wrapper
+        if asyncio.iscoroutinefunction(func):
+            return async_wrapper
+        else:
+            return sync_wrapper
 
     return decorator
 
@@ -106,7 +136,7 @@ if __name__ == "__main__":
     # lock_manager = LockManager(
     #     "/home/shazib/Desktop/Folder/python/wallpaper_updates/wallpaper_updator.lock"
     # )
-    import logging
+    # import logging
 
     logging.basicConfig(level=logging.INFO)
 
@@ -117,9 +147,17 @@ if __name__ == "__main__":
     #
     # main()
 
-    with LockManager("wallpaper_updator.lock") as lock_acquired:
-        if lock_acquired:
-            time.sleep(10)
-            print("Hello World")
-        else:
-            print("Lock not acquired")
+    # with LockManager("wallpaper_updator.lock") as lock_acquired:
+    #     if lock_acquired:
+    #         time.sleep(10)
+    #         print("Hello World")
+    #     else:
+    #         print("Lock not acquired")
+
+    # test async function
+    @lock_manager_decorator("wallpaper_updator.lock")
+    async def test_async_function():
+        print("Inside async function")
+        await asyncio.sleep(10)
+        print("Outside async function")
+    asyncio.run(test_async_function())
