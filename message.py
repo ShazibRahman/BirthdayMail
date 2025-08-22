@@ -422,7 +422,7 @@ class BirthdayMail:
         with open(self.data_path, encoding="utf-8") as file:
             self.bday = json.load(file)
 
-    def update_dates_done(self, current_date_withYear):
+    def update_dates_done(self, current_date_with_year):
         """
         Updates the dates_done list with the given current date.
 
@@ -432,11 +432,9 @@ class BirthdayMail:
         Returns:
             None
         """
-        self.dates_done.append(current_date_withYear)
+        self.dates_done.append(current_date_with_year)
         self.sort_date_dones_files()
-        self.dates_done = self.dates_done[
-            -20:
-        ]
+        self.dates_done = self.dates_done[-20:]
         save_json_file(self.dates_done_path, self.dates_done)
 
     @timeit
@@ -518,8 +516,8 @@ class BirthdayMail:
         """
         Sorts and removes duplicates from the dates_done list.
 
-        The function converts the dates_done list into a set to remove duplicate entries, 
-        and then sorts the list in chronological order based on the date format defined 
+        The function converts the dates_done list into a set to remove duplicate entries,
+        and then sorts the list in chronological order based on the date format defined
         in self.format_string_with_year.
 
         Returns:
@@ -658,7 +656,7 @@ class BirthdayMail:
             self.logging.info(f"telegram messages sent to {name}")
         except customTimeOutError:
             logging.error(
-                "sending message to %s failed due to authentication timeout",name
+                "sending message to %s failed due to authentication timeout", name
             )
             DesktopNotification(
                 title="Telegram authentication failed", message="please re-login"
