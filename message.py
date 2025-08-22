@@ -434,6 +434,9 @@ class BirthdayMail:
         """
         self.dates_done.append(current_date_withYear)
         self.sort_date_dones_files()
+        self.dates_done = self.dates_done[
+            -20:
+        ]
         save_json_file(self.dates_done_path, self.dates_done)
 
     @timeit
@@ -470,7 +473,7 @@ class BirthdayMail:
                 return None
 
         current_time = current_date_time.strftime(self.format_string)
-        self.download_read_csv_from_server_then_upload()
+        self.upload_data()
         self.load_birthday_data()
 
         if not self.check_for_pending_and_send_message():
@@ -628,24 +631,7 @@ class BirthdayMail:
     @lru_cache(maxsize=2, typed=False)
     @retry(retries=3, delay=1)
     @timeout(15)
-    def download_read_csv_from_server_then_upload(self):
-        """
-        Downloads the CSV file from Google Drive using the GDrive class, 
-        converts it to a JSON file using the csv_json function,
-        and then uploads the JSON file back to Google Drive using the GDrive class.
-
-        This function is decorated with @timeit to measure the time it takes to execute,
-        @lru_cache(maxsize=2, typed=False) to cache the result of the function for 2
-        different arguments, @retry(retries=3, delay=1) to retry the function 3 times
-        with a delay of 1 second between retries if it fails, and @timeout(15) to timeout
-        the function after 15 seconds if it takes longer than that to complete.
-
-        Returns:
-            bool: True if the file was downloaded,
-            converted to JSON and uploaded successfully, False otherwise.
-        """
-        GDrive(FOLDER_NAME).download(self.data_path)
-        csv_to_json()
+    def upload_data(self):
         GDrive(FOLDER_NAME).upload(self.data_path)
 
     @timeit
