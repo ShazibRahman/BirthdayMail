@@ -42,13 +42,3 @@ def timeout(seconds):
         return wrapper
 
     return decorator
-
-
-if __name__ == "__main__":
-
-    @timeout(1)
-    def foo():
-        while True:
-            pass
-
-    foo()
