@@ -62,7 +62,7 @@ def log_uncaught_exceptions(exctype, value, traceback):
             logger.removeHandler(handler)
         return
     logger.exception("Uncaught exception", exc_info=(exctype, value, traceback))
-    DesktopNotification("Error", f"{exctype} : {value}")
+    DesktopNotification("Error in Birthday Manager", f"{exctype} : {value}")
 
 
 # Set the exception hook

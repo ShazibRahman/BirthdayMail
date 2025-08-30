@@ -14,17 +14,21 @@ from typing import Tuple
 
 from gdrive.GDrive import GDrive
 
+from decorator_utils import timeit
+from decorator_utils import timeout,customTimeOutError
+from decorator_utils import lock_manager_decorator
+from decorator_utils import connectivity,check_connection_decorator
+from decorator_utils import retry
 
-from Decorators.retry import retry
-from Decorators.time_it import timeit
-from Decorators.timeout_decorator import customTimeOutError, timeout
+
+# from Decorators.time_it import timeit
 from Utils.DesktopNotification import DesktopNotification
-from Utils.check_internet_connectivity import check_internet_connection
 from Utils.csv_to_json import main as csv_to_json
-from Utils.lock_manager import lock_manager_decorator
 from telegram.telegram import Telegram
-from data.images import image_list
+from data.images import image_list  # type: ignore
 import logger  # type: ignore
+
+
 
 pwd = pathlib.Path(__file__).parent.resolve()
 
